@@ -9,7 +9,7 @@ import (
 )
 
 // Delete returns an HTTP handler that knows how to delete records from the collection
-func (collection *Collection) Delete(role RoleFunc) echo.HandlerFunc {
+func (collection *Collection) Delete(roles ...RoleFunc) echo.HandlerFunc {
 	return func(context echo.Context) error {
 
 		service := collection.serviceFunc()
@@ -21,9 +21,11 @@ func (collection *Collection) Delete(role RoleFunc) echo.HandlerFunc {
 			return derp.New("presto.Get", "Error loading object", err, RequestInfo(context)).Report()
 		}
 
-		// Check role to make sure that we're allowed to touch this object
-		if role(context) == false {
-			return context.String(http.StatusUnauthorized, "")
+		// Check roles to make sure that we're allowed to touch this object
+		for _, role := range roles {
+			if role(context) == false {
+				return context.String(http.StatusUnauthorized, "")
+			}
 		}
 
 		// Try to update the record in the database

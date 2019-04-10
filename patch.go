@@ -9,7 +9,7 @@ import (
 )
 
 // Patch returns an HTTP handler that knows how to update in the collection
-func (collection Collection) Patch(role RoleFunc) echo.HandlerFunc {
+func (collection Collection) Patch(roles ...RoleFunc) echo.HandlerFunc {
 
 	return func(context echo.Context) error {
 
@@ -22,9 +22,11 @@ func (collection Collection) Patch(role RoleFunc) echo.HandlerFunc {
 			return derp.New("presto.Get", "Error loading object", err, RequestInfo(context)).Report()
 		}
 
-		// Check role (before update) to make sure that we're allowed to touch this object
-		if role(context) == false {
-			return context.String(http.StatusUnauthorized, "")
+		// Check roles (before update) to make sure that we're allowed to touch this object
+		for _, role := range roles {
+			if role(context) == false {
+				return context.String(http.StatusUnauthorized, "")
+			}
 		}
 
 		// Update the object with new information
@@ -32,9 +34,11 @@ func (collection Collection) Patch(role RoleFunc) echo.HandlerFunc {
 			return derp.NewWithCode("presto.Put", "Error binding object", err, 500, object, RequestInfo(context)).Report()
 		}
 
-		// Check role again (after update) to make sure that we're making valid changes that still let us "own" this object.
-		if role(context) == false {
-			return context.String(http.StatusUnauthorized, "")
+		// Check roles again (after update) to make sure that we're making valid changes that still let us "own" this object.
+		for _, role := range roles {
+			if role(context) == false {
+				return context.String(http.StatusUnauthorized, "")
+			}
 		}
 
 		// Try to update the record in the database

@@ -9,7 +9,7 @@ import (
 )
 
 // Post returns an HTTP handler that knows how to create new objects in the collection
-func (collection Collection) Post(role RoleFunc) echo.HandlerFunc {
+func (collection Collection) Post(roles ...RoleFunc) echo.HandlerFunc {
 
 	return func(context echo.Context) error {
 
@@ -23,9 +23,11 @@ func (collection Collection) Post(role RoleFunc) echo.HandlerFunc {
 			return derp.NewWithCode("presto.Put", "Error binding object", err, 500, object, RequestInfo(context)).Report()
 		}
 
-		// Check role again (after update) to make sure that we're making valid changes that still let us "own" this object.
-		if role(context) == false {
-			return context.String(http.StatusUnauthorized, "")
+		// Check roles (after update) to make sure that we're making valid changes that still let us "own" this object.
+		for _, role := range roles {
+			if role(context) == false {
+				return context.String(http.StatusUnauthorized, "")
+			}
 		}
 
 		// Try to update the record in the database
