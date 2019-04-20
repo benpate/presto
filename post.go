@@ -14,6 +14,7 @@ func (collection Collection) Post(roles ...RoleFunc) echo.HandlerFunc {
 	return func(context echo.Context) error {
 
 		service := collection.factory.Service()
+		defer service.Close()
 
 		// Create a new, empty object
 		object := service.GenericNew()
@@ -36,7 +37,7 @@ func (collection Collection) Post(roles ...RoleFunc) echo.HandlerFunc {
 		}
 
 		// TODO: Flush Etags
-		if err := CacheManager.Set(object.ID(), object.ETag()); err != nil {
+		if err := ETagCache.Set(object.ID(), object.ETag()); err != nil {
 			return derp.Wrap(err, "presto.Post", "Error setting cache value", object)
 		}
 

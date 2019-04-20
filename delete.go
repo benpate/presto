@@ -13,6 +13,7 @@ func (collection *Collection) Delete(roles ...RoleFunc) *Collection {
 	handler := func(context echo.Context) error {
 
 		service := collection.factory.Service()
+		defer service.Close()
 
 		// Try to load the record from the database
 		object, err := service.GenericLoad(context.Param("id"))
@@ -34,7 +35,7 @@ func (collection *Collection) Delete(roles ...RoleFunc) *Collection {
 		}
 
 		// Flush Etag cache
-		if err := CacheManager.Set(object.ID(), ""); err != nil {
+		if err := ETagCache.Set(object.ID(), ""); err != nil {
 			return derp.Wrap(err, "presto.Delete", "Error flushing ETag cache", object)
 		}
 

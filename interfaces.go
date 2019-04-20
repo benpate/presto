@@ -31,10 +31,13 @@ type GenericService interface {
 
 	// Delete removes a single object from the database
 	GenericDelete(object Object, comment string) *derp.Error
+
+	// Close cleans up any connections opened by the service.
+	Close()
 }
 
 // RoleFunc is a function signature that validates a user's permission to access a particular object
-type RoleFunc func(echo.Context, Object) bool
+type RoleFunc func(context echo.Context, object Object) bool
 
 // Object wraps all of the methods that a Domain Object must provide to Presto
 type Object interface {

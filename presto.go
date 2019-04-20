@@ -4,7 +4,7 @@ Go and the [Echo Router](http://echo.labstack.com)
 */
 package presto
 
-var CacheManager Cache
+var ETagCache Cache
 
 /*
 func main() {
