@@ -3,7 +3,7 @@ package presto
 import (
 	"net/http"
 
-	"github.com/labstack/echo"
+	"github.com/labstack/echo/v4"
 
 	"github.com/benpate/derp"
 )
@@ -13,29 +13,32 @@ func (collection Collection) Post(roles ...RoleFunc) echo.HandlerFunc {
 
 	return func(context echo.Context) error {
 
-		service := collection.serviceFunc()
+		service := collection.factory.Service()
 
 		// Create a new, empty object
-		object := service.NewObject()
+		object := service.GenericNew()
 
 		// Update the object with new information
 		if err := context.Bind(object); err != nil {
-			return derp.NewWithCode("presto.Put", "Error binding object", err, 500, object, RequestInfo(context)).Report()
+			return derp.New(derp.CodeBadRequestError, "presto.Post", "Error binding object", err.Error(), object, RequestInfo(context)).Report()
 		}
 
 		// Check roles (after update) to make sure that we're making valid changes that still let us "own" this object.
 		for _, role := range roles {
-			if role(context) == false {
-				return context.String(http.StatusUnauthorized, "")
+			if role(context, object) == false {
+				return context.NoContent(http.StatusUnauthorized)
 			}
 		}
 
 		// Try to update the record in the database
-		if err := service.SaveObject(object, "SAVE COMMENT HERE"); err != nil {
-			return derp.New("presto.Put", "Error saving object", err, object, RequestInfo(context)).Report()
+		if err := service.GenericSave(object, "SAVE COMMENT HERE"); err != nil {
+			return derp.Wrap(err, "presto.Post", "Error saving object", object, RequestInfo(context)).Report()
 		}
 
 		// TODO: Flush Etags
+		if err := CacheManager.Set(object.ID(), object.ETag()); err != nil {
+			return derp.Wrap(err, "presto.Post", "Error setting cache value", object)
+		}
 
 		// Return the newly updated record to the caller.
 		return context.JSON(http.StatusOK, object)

@@ -7,7 +7,14 @@ Presto works side-by-side with any other routes that you create in your HTTP han
 
 ```go
 // Define a new service to expose online as a REST collection.
-note := presto.NewCollection(NoteService)
+note := presto.NewCollection(echo.Echo, NoteService, "/notes").
+    List(nil).                       // Public.  No extra roles required
+    Post(role.InRoom).               // Must be "in room" to add new notes.
+    Get(role.InRoom).                // Must be "in room" to view existing notes.
+    Put(role.InRoom, role.Owner).    // Must be "owner" to update notes.
+    Patch(role.InRoom, role.Owner).  // Must be "owner" to update notes.
+    Delete(role.InRoom, role.Owner). // Must be "owner" to delete notes.
+
 
 // Register HTTP methods to the service, including a list of permissions
 e.GET("/notes", note.List()) // public, no extra roles required

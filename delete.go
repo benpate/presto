@@ -3,39 +3,48 @@ package presto
 import (
 	"net/http"
 
-	"github.com/labstack/echo"
-
 	"github.com/benpate/derp"
+	"github.com/labstack/echo/v4"
 )
 
 // Delete returns an HTTP handler that knows how to delete records from the collection
-func (collection *Collection) Delete(roles ...RoleFunc) echo.HandlerFunc {
-	return func(context echo.Context) error {
+func (collection *Collection) Delete(roles ...RoleFunc) *Collection {
 
-		service := collection.serviceFunc()
+	handler := func(context echo.Context) error {
+
+		service := collection.factory.Service()
 
 		// Try to load the record from the database
-		object, err := service.LoadObject(context.Param("id"))
+		object, err := service.GenericLoad(context.Param("id"))
 
 		if err != nil {
-			return derp.New("presto.Get", "Error loading object", err, RequestInfo(context)).Report()
+			return derp.Wrap(err, "presto.Get", "Error loading object", RequestInfo(context)).Report()
 		}
 
 		// Check roles to make sure that we're allowed to touch this object
 		for _, role := range roles {
-			if role(context) == false {
-				return context.String(http.StatusUnauthorized, "")
+			if role(context, object) == false {
+				return context.NoContent(http.StatusUnauthorized)
 			}
 		}
 
 		// Try to update the record in the database
-		if err := service.DeleteObject(object, "DELETE COMMENT HERE"); err != nil {
-			return derp.New("presto.Delete", "Error deleting object", err, object, RequestInfo(context)).Report()
+		if err := service.GenericDelete(object, "DELETE COMMENT HERE"); err != nil {
+			return derp.Wrap(err, "presto.Delete", "Error deleting object", object, RequestInfo(context)).Report()
 		}
 
-		// TODO: Flush Etags & cache
+		// Flush Etag cache
+		if err := CacheManager.Set(object.ID(), ""); err != nil {
+			return derp.Wrap(err, "presto.Delete", "Error flushing ETag cache", object)
+		}
 
 		// Return the newly updated record to the caller.
-		return context.String(http.StatusNoContent, "")
+		return context.NoContent(http.StatusNoContent)
 	}
+
+	// Register the handler with the router
+	collection.router.DELETE(collection.prefix+"/:id", handler)
+
+	// Return the collection, so that we can chain function calls.
+	return collection
 }

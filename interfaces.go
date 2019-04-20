@@ -2,34 +2,39 @@ package presto
 
 import (
 	"github.com/benpate/derp"
-	"github.com/labstack/echo"
+	"github.com/labstack/echo/v4"
 )
 
-// ServiceFunc is a function that generates and initializes the required service.
-type ServiceFunc func() Service
+// ServiceFactory is an interface for objects that generate service sessions.
+// Each session represents a single HTTP request, which can potentially span
+// multiple database calls.  This gives the factory an opportunity to
+// initialize a new database session for each HTTP request.
+type ServiceFactory interface {
+	Service() GenericService
+}
 
-// Service wraps all of the methods that a service managing Domain Objects must provide to Presto
-type Service interface {
+// GenericService defines all of the functions that a service must provide to work with Presto.
+// It is called a Generic service, because it relies on the generic Object interface to load and
+// save objects of any type.
+// GenericServices will likely include additional business logic that is triggered when a
+// domain object is created, edited, or deleted, but this is hidden from presto.
+type GenericService interface {
 
 	// New creates a newly initialized object that is ready to use
-	NewObject() Object
+	GenericNew() Object
 
 	// Load retrieves a single object from the database
-	LoadObject(string) (Object, *derp.Error)
+	GenericLoad(objectID string) (Object, *derp.Error)
 
 	// Save inserts/updates a single object in the database
-	SaveObject(Object, string) *derp.Error
+	GenericSave(object Object, comment string) *derp.Error
 
 	// Delete removes a single object from the database
-	DeleteObject(Object, string) *derp.Error
+	GenericDelete(object Object, comment string) *derp.Error
 }
 
 // RoleFunc is a function signature that validates a user's permission to access a particular object
-type RoleFunc func(echo.Context) bool
-
-// ScopeFunc defines the baseline query parameters that are present in ALL queries.  This
-// sets the maximum range (or scope) of the records that the requester can access
-type ScopeFunc func(echo.Context) map[string]interface{}
+type RoleFunc func(echo.Context, Object) bool
 
 // Object wraps all of the methods that a Domain Object must provide to Presto
 type Object interface {
@@ -41,11 +46,27 @@ type Object interface {
 	IsNew() bool
 
 	// SetCreated stamps the CreateDate and UpdateDate of the object, and makes a note
-	SetCreated(string)
+	SetCreated(comment string)
 
 	// SetUpdated stamps the UpdateDate of the object, and makes a note
-	SetUpdated(string)
+	SetUpdated(comment string)
 
 	// SetDeleted marks the object virtually "deleted", and makes a note
-	SetDeleted(string)
+	SetDeleted(comment string)
+
+	// ETag returns a version-unique string that helps determine if an object has changed or not.
+	ETag() string
+}
+
+// Cache maintains fast access to key/value pairs that are used to check ETags of incoming requests.
+// By default, Presto uses a Null cache, that simply reports cache misses for every request.  However,
+// this can be extended by the user, with any external caching system that matches this interface.
+type Cache interface {
+
+	// Get returns the cache value (ETag) corresponding to the argument (objectID) provided.
+	// If a value is not found, then Get returns empty string ("")
+	Get(objectID string) string
+
+	// Set updates the value in the cache, returning a derp.Error in case there was a problem.
+	Set(objectID string, value string) *derp.Error
 }

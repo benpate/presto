@@ -3,55 +3,70 @@ package presto
 import (
 	"net/http"
 
-	"github.com/labstack/echo"
+	"github.com/labstack/echo/v4"
 
 	"github.com/benpate/derp"
 )
 
 // Put returns an HTTP handler that knows how to update in the collection
-func (collection Collection) Put(roles ...RoleFunc) echo.HandlerFunc {
+func (collection *Collection) Put(roles ...RoleFunc) *Collection {
 
-	return func(context echo.Context) error {
+	handler := func(context echo.Context) error {
 
-		service := collection.serviceFunc()
+		service := collection.factory.Service()
 
 		// Try to load the record from the database
-		object, err := service.LoadObject(context.Param("id"))
+		object, err := service.GenericLoad(context.Param("id"))
 
 		if err != nil {
-			return derp.New("presto.Get", "Error loading object", err, RequestInfo(context)).Report()
+			return derp.Wrap(err, "presto.Get", "Error loading object", RequestInfo(context)).Report()
+		}
+
+		if etag := context.Request().Header.Get("ETag"); etag != "" {
+			if etag != CacheManager.Get(object.ID()) {
+				return context.NoContent(http.StatusConflict)
+			}
 		}
 
 		// Check roles (before update) to make sure that we're allowed to touch this object
 		for _, role := range roles {
-			if role(context) == false {
-				return context.String(http.StatusUnauthorized, "")
+			if role(context, object) == false {
+				return context.NoContent(http.StatusUnauthorized)
 			}
 		}
 
 		// Create a new object to populate from this point forward
-		object = service.NewObject()
+		object = service.GenericNew()
 
 		// Update the object with new information
 		if err := context.Bind(object); err != nil {
-			return derp.NewWithCode("presto.Put", "Error binding object", err, 500, object, RequestInfo(context)).Report()
+			return derp.New(derp.CodeBadRequestError, "presto.Put", "Error binding object", err.Error(), object, RequestInfo(context)).Report()
 		}
 
-		// Check roles again (after update) to make sure that we're making valid changes that still let us "own" this object.
+		// Check roles again (after update, before save) to make sure that we're making valid changes that still let us "own" this object.
 		for _, role := range roles {
-			if role(context) == false {
-				return context.String(http.StatusUnauthorized, "")
+			if role(context, object) == false {
+				return context.NoContent(http.StatusUnauthorized)
 			}
 		}
 
 		// Try to update the record in the database
-		if err := service.SaveObject(object, "SAVE COMMENT HERE"); err != nil {
-			return derp.New("presto.Put", "Error saving object", err, object, RequestInfo(context)).Report()
+		if err := service.GenericSave(object, "SAVE COMMENT HERE"); err != nil {
+			return derp.Wrap(err, "presto.Put", "Error saving object", object, RequestInfo(context)).Report()
 		}
 
-		// TODO: Flush Etags & cache
+		// Flush Etag cache
+		if err := CacheManager.Set(object.ID(), object.ETag()); err != nil {
+			return derp.Wrap(err, "presto.Put", "Error updating cache", object).Report()
+		}
 
 		// Return the newly updated record to the caller.
 		return context.JSON(http.StatusOK, object)
 	}
+
+	// Register the handler with the router
+	collection.router.PUT(collection.prefix+"/:id", handler)
+
+	// Return the collection so that users can chain requests
+	return collection
 }
