@@ -1,4 +1,4 @@
-# Presto
+# Presto 🎩
 
 ## Magical REST interfaces for Go
 
