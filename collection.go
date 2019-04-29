@@ -44,5 +44,5 @@ func (collection *Collection) getCache() Cache {
 		return collection.cache
 	}
 
-	return GlobalCache
+	return globalCache
 }
