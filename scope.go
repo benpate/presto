@@ -1,6 +1,6 @@
 package presto
 
-import "github.com/labstack/echo"
+import "github.com/labstack/echo/v4"
 import "github.com/benpate/derp"
 
 // ScopeFunc is the function signature for a function that can limit database
