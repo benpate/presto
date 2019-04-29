@@ -5,19 +5,21 @@ import "github.com/labstack/echo/v4"
 // Collection provides all of the HTTP hanlers for a specific domain object,
 // or collection of records
 type Collection struct {
-	router      *echo.Echo
-	serviceFunc ServiceFunc
-	prefix      string
-	scopes      []ScopeFunc
+	router  *echo.Echo
+	factory ServiceFactory
+	name    string
+	prefix  string
+	scopes  []ScopeFunc
 }
 
 // NewCollection returns a fully populated Collection object
-func NewCollection(router *echo.Echo, serviceFunc ServiceFunc, prefix string) *Collection {
+func NewCollection(router *echo.Echo, factory ServiceFactory, name string, prefix string) *Collection {
 	return &Collection{
-		router:      router,
-		serviceFunc: serviceFunc,
-		prefix:      prefix,
-		scopes:      []ScopeFunc{IDScope},
+		router:  router,
+		factory: factory,
+		name:    name,
+		prefix:  prefix,
+		scopes:  []ScopeFunc{IDScope},
 	}
 }
 
