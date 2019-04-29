@@ -12,7 +12,7 @@ func (collection *Collection) Get(roles ...RoleFunc) *Collection {
 
 	handler := func(context echo.Context) error {
 
-		service := collection.factory.Service()
+		service := collection.serviceFunc()
 		defer service.Close()
 
 		objectID := context.Param("id")

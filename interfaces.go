@@ -9,28 +9,25 @@ import (
 // Each session represents a single HTTP request, which can potentially span
 // multiple database calls.  This gives the factory an opportunity to
 // initialize a new database session for each HTTP request.
-type ServiceFactory interface {
-	Service() GenericService
-}
+type ServiceFunc func() Service
 
-// GenericService defines all of the functions that a service must provide to work with Presto.
-// It is called a Generic service, because it relies on the generic Object interface to load and
-// save objects of any type.
+// Service defines all of the functions that a service must provide to work with Presto.
+// It relies on the generic Object interface to load and save objects of any type.
 // GenericServices will likely include additional business logic that is triggered when a
 // domain object is created, edited, or deleted, but this is hidden from presto.
-type GenericService interface {
+type Service interface {
 
-	// New creates a newly initialized object that is ready to use
-	GenericNew() Object
+	// NewObject creates a newly initialized object that is ready to use
+	NewObject() Object
 
 	// Load retrieves a single object from the database
-	GenericLoad(objectID string) (Object, *derp.Error)
+	LoadObject(objectID string) (Object, *derp.Error)
 
 	// Save inserts/updates a single object in the database
-	GenericSave(object Object, comment string) *derp.Error
+	SaveObject(object Object, comment string) *derp.Error
 
 	// Delete removes a single object from the database
-	GenericDelete(object Object, comment string) *derp.Error
+	DeleteObject(object Object, comment string) *derp.Error
 
 	// Close cleans up any connections opened by the service.
 	Close()

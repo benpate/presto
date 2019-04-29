@@ -13,7 +13,7 @@ func (collection *Collection) Put(roles ...RoleFunc) *Collection {
 
 	handler := func(context echo.Context) error {
 
-		service := collection.factory.Service()
+		service := collection.serviceFunc()
 		defer service.Close()
 
 		// Try to load the record from the database

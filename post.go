@@ -13,7 +13,7 @@ func (collection Collection) Post(roles ...RoleFunc) echo.HandlerFunc {
 
 	return func(context echo.Context) error {
 
-		service := collection.factory.Service()
+		service := collection.serviceFunc()
 		defer service.Close()
 
 		// Create a new, empty object

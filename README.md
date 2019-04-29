@@ -7,13 +7,13 @@ Presto is a thin wrapper library that helps structure and simplify the REST inte
 ```go
 // Define a new service to expose online as a REST collection.
 presto.NewCollection(echo.Echo, NoteFactory, "/notes").
-    List().                          // Public.  No extra roles required
-    Post(role.InRoom).               // Must be "in room" to add new notes.
-    Get(role.InRoom).                // Must be "in room" to view existing notes.
-    Put(role.InRoom, role.Owner).    // Must be "owner" to update notes.
-    Patch(role.InRoom, role.Owner).  // Must be "owner" to update notes.
-    Delete(role.InRoom, role.Owner). // Must be "owner" to delete notes.
-    Method("action-name", customHandler, role.InRoom, role.CustomValue) // Custom POST action on this object
+    List().
+    Post(role.InRoom).
+    Get(role.InRoom).
+    Put(role.InRoom, role.Owner).
+    Patch(role.InRoom, role.Owner).
+    Delete(role.InRoom, role.Owner).
+    Method("action-name", customHandler, role.InRoom, role.CustomValue)
 ```
 
 ## Design Philosophy
