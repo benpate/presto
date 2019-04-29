@@ -19,9 +19,11 @@ func (collection *Collection) Get(roles ...RoleFunc) *Collection {
 
 		// If the object has an ETag, and it matches the value in the cache,
 		// then we don't need to proceed any further.
-		if etag := context.Request().Header.Get("ETag"); etag != "" {
-			if ETagCache.Get(objectID) == etag {
-				return context.NoContent(http.StatusNotModified)
+		if cache := collection.getCache(); cache != nil {
+			if etag := context.Request().Header.Get("ETag"); etag != "" {
+				if cache.Get(objectID) == etag {
+					return context.NoContent(http.StatusNotModified)
+				}
 			}
 		}
 
@@ -33,11 +35,11 @@ func (collection *Collection) Get(roles ...RoleFunc) *Collection {
 		}
 
 		// Try to update the ETag in the cache
-		if err := ETagCache.Set(objectID, object.ETag()); err != nil {
-			return derp.Wrap(err, "presto.Get", "Error setting cache value", object).Report()
+		if cache := collection.getCache(); cache != nil {
+			if err := cache.Set(objectID, object.ETag()); err != nil {
+				return derp.Wrap(err, "presto.Get", "Error setting cache value", object).Report()
+			}
 		}
-
-		// TODO: Update cache
 
 		// Check roles to make sure that we're allowed to view this object
 		for _, role := range roles {

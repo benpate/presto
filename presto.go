@@ -4,14 +4,4 @@ Go and the [Echo Router](http://echo.labstack.com)
 */
 package presto
 
-var ETagCache Cache
-
-/*
-func main() {
-
-	e := interface{}
-
-	persons := presto.NewCollection(echo, factory.Service("Person"))
-	persons.List("/persons/",
-}
-*/
+var GlobalCache Cache

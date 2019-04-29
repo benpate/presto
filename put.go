@@ -23,9 +23,12 @@ func (collection *Collection) Put(roles ...RoleFunc) *Collection {
 			return derp.Wrap(err, "presto.Get", "Error loading object", RequestInfo(context)).Report()
 		}
 
-		if etag := context.Request().Header.Get("ETag"); etag != "" {
-			if etag != ETagCache.Get(object.ID()) {
-				return context.NoContent(http.StatusConflict)
+		// If we are using a cache, then use ETags to verify optimistic locking
+		if cache := collection.getCache(); cache != nil {
+			if etag := context.Request().Header.Get("ETag"); etag != "" {
+				if etag != cache.Get(object.ID()) {
+					return context.NoContent(http.StatusConflict)
+				}
 			}
 		}
 
@@ -56,9 +59,11 @@ func (collection *Collection) Put(roles ...RoleFunc) *Collection {
 			return derp.Wrap(err, "presto.Put", "Error saving object", object, RequestInfo(context)).Report()
 		}
 
-		// Flush Etag cache
-		if err := ETagCache.Set(object.ID(), object.ETag()); err != nil {
-			return derp.Wrap(err, "presto.Put", "Error updating cache", object).Report()
+		// Try to update the ETag cache
+		if cache := collection.getCache(); cache != nil {
+			if err := cache.Set(object.ID(), object.ETag()); err != nil {
+				return derp.Wrap(err, "presto.Put", "Error updating cache", object).Report()
+			}
 		}
 
 		// Return the newly updated record to the caller.

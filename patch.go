@@ -47,9 +47,11 @@ func (collection *Collection) Patch(roles ...RoleFunc) *Collection {
 			return derp.Wrap(err, "presto.Put", "Error saving object", object, RequestInfo(context)).Report()
 		}
 
-		// Flush Etag cache
-		if err := ETagCache.Set(object.ID(), object.ETag()); err != nil {
-			return derp.Wrap(err, "presto.Put", "Error updating ETag cache", object).Report()
+		// Try to update the ETag cache
+		if cache := collection.getCache(); cache != nil {
+			if err := cache.Set(object.ID(), object.ETag()); err != nil {
+				return derp.Wrap(err, "presto.Put", "Error updating ETag cache", object).Report()
+			}
 		}
 
 		// Return the newly updated record to the caller.

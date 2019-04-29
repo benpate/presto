@@ -36,9 +36,11 @@ func (collection *Collection) Post(roles ...RoleFunc) *Collection {
 			return derp.Wrap(err, "presto.Post", "Error saving object", object, RequestInfo(context)).Report()
 		}
 
-		// TODO: Flush Etags
-		if err := ETagCache.Set(object.ID(), object.ETag()); err != nil {
-			return derp.Wrap(err, "presto.Post", "Error setting cache value", object)
+		// Try to reset the ETag cache
+		if cache := collection.getCache(); cache != nil {
+			if err := cache.Set(object.ID(), object.ETag()); err != nil {
+				return derp.Wrap(err, "presto.Post", "Error setting cache value", object)
+			}
 		}
 
 		// Return the newly updated record to the caller.

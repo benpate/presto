@@ -34,9 +34,11 @@ func (collection *Collection) Delete(roles ...RoleFunc) *Collection {
 			return derp.Wrap(err, "presto.Delete", "Error deleting object", object, RequestInfo(context)).Report()
 		}
 
-		// Flush Etag cache
-		if err := ETagCache.Set(object.ID(), ""); err != nil {
-			return derp.Wrap(err, "presto.Delete", "Error flushing ETag cache", object)
+		// Try to remove the Etag from the cache
+		if cache := collection.getCache(); cache != nil {
+			if err := cache.Set(object.ID(), ""); err != nil {
+				return derp.Wrap(err, "presto.Delete", "Error flushing ETag cache", object)
+			}
 		}
 
 		// Return the newly updated record to the caller.

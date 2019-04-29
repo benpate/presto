@@ -10,6 +10,7 @@ type Collection struct {
 	name    string
 	prefix  string
 	scopes  []ScopeFunc
+	cache   Cache
 }
 
 // NewCollection returns a fully populated Collection object
@@ -28,4 +29,20 @@ func (collection *Collection) WithScopes(scopes ...ScopeFunc) *Collection {
 	collection.scopes = scopes
 
 	return collection
+}
+
+// WithCache adds a local ETag cache for this collection only
+func (collection *Collection) WithCache(cache Cache) *Collection {
+	collection.cache = cache
+
+	return collection
+}
+
+func (collection *Collection) getCache() Cache {
+
+	if collection.cache != nil {
+		return collection.cache
+	}
+
+	return GlobalCache
 }
