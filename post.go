@@ -9,9 +9,9 @@ import (
 )
 
 // Post returns an HTTP handler that knows how to create new objects in the collection
-func (collection Collection) Post(roles ...RoleFunc) echo.HandlerFunc {
+func (collection *Collection) Post(roles ...RoleFunc) *Collection {
 
-	return func(context echo.Context) error {
+	handler := func(context echo.Context) error {
 
 		service := collection.serviceFunc()
 		defer service.Close()
@@ -44,4 +44,8 @@ func (collection Collection) Post(roles ...RoleFunc) echo.HandlerFunc {
 		// Return the newly updated record to the caller.
 		return context.JSON(http.StatusOK, object)
 	}
+
+	collection.router.POST(collection.prefix+"/:id", handler)
+
+	return collection
 }
