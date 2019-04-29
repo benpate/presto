@@ -5,7 +5,7 @@ import (
 )
 
 // List returns an HTTP handler that knows how to list a series of records from the collection
-func (collection *Collection) List(role RoleFunc) *Collection {
+func (collection *Collection) List(roles ...RoleFunc) *Collection {
 
 	handler := func(context echo.Context) error {
 		return nil
