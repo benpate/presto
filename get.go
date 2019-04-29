@@ -26,7 +26,7 @@ func (collection *Collection) Get(roles ...RoleFunc) *Collection {
 		}
 
 		// Load the object from the database
-		object, err := service.GenericLoad(objectID)
+		object, err := service.LoadObject(objectID)
 
 		if err != nil {
 			return derp.Wrap(err, "presto.Get", "Error loading object", objectID).Report()

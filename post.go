@@ -17,7 +17,7 @@ func (collection Collection) Post(roles ...RoleFunc) echo.HandlerFunc {
 		defer service.Close()
 
 		// Create a new, empty object
-		object := service.GenericNew()
+		object := service.NewObject()
 
 		// Update the object with new information
 		if err := context.Bind(object); err != nil {
@@ -32,7 +32,7 @@ func (collection Collection) Post(roles ...RoleFunc) echo.HandlerFunc {
 		}
 
 		// Try to update the record in the database
-		if err := service.GenericSave(object, "SAVE COMMENT HERE"); err != nil {
+		if err := service.SaveObject(object, "SAVE COMMENT HERE"); err != nil {
 			return derp.Wrap(err, "presto.Post", "Error saving object", object, RequestInfo(context)).Report()
 		}
 

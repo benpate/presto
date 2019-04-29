@@ -17,7 +17,7 @@ func (collection *Collection) Patch(roles ...RoleFunc) *Collection {
 		defer service.Close()
 
 		// Try to load the record from the database
-		object, err := service.GenericLoad(context.Param("id"))
+		object, err := service.LoadObject(context.Param("id"))
 
 		if err != nil {
 			return derp.Wrap(err, "presto.Get", "Error loading object", RequestInfo(context)).Report()
@@ -43,7 +43,7 @@ func (collection *Collection) Patch(roles ...RoleFunc) *Collection {
 		}
 
 		// Try to update the record in the database
-		if err := service.GenericSave(object, "SAVE COMMENT HERE"); err != nil {
+		if err := service.SaveObject(object, "SAVE COMMENT HERE"); err != nil {
 			return derp.Wrap(err, "presto.Put", "Error saving object", object, RequestInfo(context)).Report()
 		}
 
