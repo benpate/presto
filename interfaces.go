@@ -5,7 +5,7 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-// Factory is an interface for objects that generate service sessions.
+// ServiceFactory is an interface for objects that generate service sessions.
 // Each session represents a single HTTP request, which can potentially span
 // multiple database calls.  This gives the factory an opportunity to
 // initialize a new database session for each HTTP request.

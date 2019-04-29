@@ -3,8 +3,13 @@ package presto
 import "github.com/labstack/echo"
 import "github.com/benpate/derp"
 
+// ScopeFunc is the function signature for a function that can limit database
+// queries to a particular "scope".  It inspects the provided context and
+// returns criteria that will be passed to all database queries.
 type ScopeFunc func(context echo.Context) (map[string]interface{}, *derp.Error)
 
+// IDScope uses the :id parameter to return individual records based on their ID.
+// It is the default behavior for presto.
 func IDScope(context echo.Context) (map[string]interface{}, *derp.Error) {
 
 	names := context.ParamNames()
