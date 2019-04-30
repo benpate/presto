@@ -52,7 +52,7 @@ func (collection *Collection) Post(roles ...RoleFunc) *Collection {
 		return context.JSON(http.StatusOK, object)
 	}
 
-	collection.router.POST(collection.prefix+"/:id", handler)
+	collection.router.POST(collection.prefix, handler)
 
 	return collection
 }
