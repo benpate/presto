@@ -1,7 +1,7 @@
 github.com/benpate/derp v0.9.1 h1:/zQvEd57dmWX6VWgFHJy8U4qJC5Z/aTgq/X0VAaNGjw=
 github.com/benpate/derp v0.9.1/go.mod h1:uk1EoSDvBEkBIOw4J/qeLga2kUCvKukIFFk3YE7Zjtk=
-github.com/benpate/remote v0.5.3 h1:Rhxidk/C+2OmHw9ALU6IodtfkG46ZahGn9mkXAI+Sio=
-github.com/benpate/remote v0.5.3/go.mod h1:7ogQjmTUDV34AFAGHV1twfr8Xvzx3/GWapmF8/jz+T0=
+github.com/benpate/remote v0.5.4 h1:r8xn4A/cl12Hrxt/xtKfkTvGzWYL228hlDZWroqWIrI=
+github.com/benpate/remote v0.5.4/go.mod h1:7ogQjmTUDV34AFAGHV1twfr8Xvzx3/GWapmF8/jz+T0=
 github.com/davecgh/go-spew v1.1.0 h1:ZDRjVQ15GmhC3fiQ8ni8+OwkZQO4DARzQgrnXU1Liz8=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/dgrijalva/jwt-go v3.2.0+incompatible/go.mod h1:E3ru+11k8xSBh+hMPgOLZmtrrCbhqsmaPHjLKYnJCaQ=

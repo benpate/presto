@@ -30,10 +30,10 @@ func TestPresto(t *testing.T) {
 		Patch().
 		Delete()
 
-	go e.Start(":80")
+	go e.Start(":8080")
 
 	// Verify that the server is running.
-	if err := remote.Get("http://localhost/").Send(); err != nil {
+	if err := remote.Get("http://localhost:8080/").Send(); err != nil {
 		err.Report()
 		assert.Fail(t, "Error getting default route", err)
 	}
@@ -49,7 +49,7 @@ func TestPresto(t *testing.T) {
 	person := testPerson{}
 
 	// Post a record to the "remote" server
-	t1 := remote.Post("http://localhost/persons").
+	t1 := remote.Post("http://localhost:8080/persons").
 		JSON(john)
 
 	if err := t1.Send(); err != nil {
@@ -76,7 +76,7 @@ func TestPresto(t *testing.T) {
 		Email:    "sarah@sky.net",
 	}
 
-	t2 := remote.Put("http://localhost/persons/" + sarah.ID()).
+	t2 := remote.Put("http://localhost:8080/persons/" + sarah.ID()).
 		JSON(sarah)
 
 	if err := t2.Send(); err != nil {
@@ -98,7 +98,7 @@ func TestPresto(t *testing.T) {
 	// GET records
 
 	// Load John
-	t3 := remote.Get("http://localhost/persons/"+john.PersonID).
+	t3 := remote.Get("http://localhost:8080/persons/"+john.PersonID).
 		Response(&person, nil)
 
 	if err := t3.Send(); err != nil {
@@ -111,7 +111,7 @@ func TestPresto(t *testing.T) {
 	assert.Equal(t, john.Email, person.Email)
 
 	// Load Sarah
-	t4 := remote.Get("http://localhost/persons/"+sarah.PersonID).
+	t4 := remote.Get("http://localhost:8080/persons/"+sarah.PersonID).
 		Response(&person, nil)
 
 	if err := t4.Send(); err != nil {
