@@ -31,13 +31,15 @@ func (collection *Collection) Get(roles ...RoleFunc) *Collection {
 		object, err := service.LoadObject(objectID)
 
 		if err != nil {
-			return derp.Wrap(err, "presto.Get", "Error loading object", objectID).Report()
+			err = derp.Wrap(err, "presto.Get", "Error loading object", objectID).Report()
+			return context.NoContent(err.Code)
 		}
 
 		// Try to update the ETag in the cache
 		if cache := collection.getCache(); cache != nil {
 			if err := cache.Set(objectID, object.ETag()); err != nil {
-				return derp.Wrap(err, "presto.Get", "Error setting cache value", object).Report()
+				err = derp.Wrap(err, "presto.Get", "Error setting cache value", object).Report()
+				return context.NoContent(err.Code)
 			}
 		}
 

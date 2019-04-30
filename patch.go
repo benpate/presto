@@ -16,11 +16,14 @@ func (collection *Collection) Patch(roles ...RoleFunc) *Collection {
 		service := collection.factory.Service(collection.name)
 		defer service.Close()
 
+		// TODO: Use SCOPE here.
+
 		// Try to load the record from the database
 		object, err := service.LoadObject(context.Param("id"))
 
 		if err != nil {
-			return derp.Wrap(err, "presto.Get", "Error loading object", RequestInfo(context)).Report()
+			err = derp.Wrap(err, "presto.Get", "Error loading object", RequestInfo(context)).Report()
+			return context.NoContent(err.Code)
 		}
 
 		// Check roles (before update) to make sure that we're allowed to touch this object
@@ -31,8 +34,9 @@ func (collection *Collection) Patch(roles ...RoleFunc) *Collection {
 		}
 
 		// Update the object with new information
-		if err := context.Bind(object); err != nil {
-			return derp.New(derp.CodeBadRequestError, "presto.Put", "Error binding object", object, RequestInfo(context)).Report()
+		if er := context.Bind(object); er != nil {
+			err := derp.New(derp.CodeBadRequestError, "presto.Put", "Error binding object", er, object, RequestInfo(context)).Report()
+			return context.NoContent(err.Code)
 		}
 
 		// Check roles again (after update) to make sure that we're making valid changes that still let us "own" this object.
@@ -44,13 +48,15 @@ func (collection *Collection) Patch(roles ...RoleFunc) *Collection {
 
 		// Try to update the record in the database
 		if err := service.SaveObject(object, "SAVE COMMENT HERE"); err != nil {
-			return derp.Wrap(err, "presto.Put", "Error saving object", object, RequestInfo(context)).Report()
+			err = derp.Wrap(err, "presto.Put", "Error saving object", object, RequestInfo(context)).Report()
+			return context.NoContent(err.Code)
 		}
 
 		// Try to update the ETag cache
 		if cache := collection.getCache(); cache != nil {
 			if err := cache.Set(object.ID(), object.ETag()); err != nil {
-				return derp.Wrap(err, "presto.Put", "Error updating ETag cache", object).Report()
+				err = derp.Wrap(err, "presto.Put", "Error updating ETag cache", object).Report()
+				return context.NoContent(err.Code)
 			}
 		}
 

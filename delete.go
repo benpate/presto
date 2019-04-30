@@ -15,11 +15,14 @@ func (collection *Collection) Delete(roles ...RoleFunc) *Collection {
 		service := collection.factory.Service(collection.name)
 		defer service.Close()
 
+		// TODO: Use SCOPE here.
+
 		// Try to load the record from the database
 		object, err := service.LoadObject(context.Param("id"))
 
 		if err != nil {
-			return derp.Wrap(err, "presto.Get", "Error loading object", RequestInfo(context)).Report()
+			err = derp.Wrap(err, "presto.Get", "Error loading object", RequestInfo(context)).Report()
+			return context.NoContent(err.Code)
 		}
 
 		// Check roles to make sure that we're allowed to touch this object
@@ -31,13 +34,15 @@ func (collection *Collection) Delete(roles ...RoleFunc) *Collection {
 
 		// Try to update the record in the database
 		if err := service.DeleteObject(object, "DELETE COMMENT HERE"); err != nil {
-			return derp.Wrap(err, "presto.Delete", "Error deleting object", object, RequestInfo(context)).Report()
+			err = derp.Wrap(err, "presto.Delete", "Error deleting object", object, RequestInfo(context)).Report()
+			return context.NoContent(err.Code)
 		}
 
 		// Try to remove the Etag from the cache
 		if cache := collection.getCache(); cache != nil {
 			if err := cache.Set(object.ID(), ""); err != nil {
-				return derp.Wrap(err, "presto.Delete", "Error flushing ETag cache", object)
+				err = derp.Wrap(err, "presto.Delete", "Error flushing ETag cache", object)
+				return context.NoContent(err.Code)
 			}
 		}
 
