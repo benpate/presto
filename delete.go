@@ -10,44 +10,55 @@ import (
 // Delete returns an HTTP handler that knows how to delete records from the collection
 func (collection *Collection) Delete(roles ...RoleFunc) *Collection {
 
-	handler := func(context echo.Context) error {
+	handler := func(ctx echo.Context) error {
 
 		service := collection.factory.Service(collection.name)
 		defer service.Close()
 
-		// TODO: Use SCOPE here.
-
-		// Try to load the record from the database
-		object, err := service.LoadObject(context.Param("id"))
+		// Use scoper functions to create query criteria for this object
+		filter, err := collection.getScope(ctx)
 
 		if err != nil {
-			err = derp.Wrap(err, "presto.Get", "Error loading object", RequestInfo(context)).Report()
-			return context.NoContent(err.Code)
+			err = derp.Wrap(err, "presto.Delete", "Error determining scope", ctx).Report()
+			return ctx.NoContent(err.Code)
+		}
+
+		// Try to load the record from the database
+		object, err := service.LoadObject(filter)
+
+		if err != nil {
+			err = derp.Wrap(err, "presto.Delete", "Error loading object", RequestInfo(ctx)).Report()
+			return ctx.NoContent(err.Code)
 		}
 
 		// Check roles to make sure that we're allowed to touch this object
 		for _, role := range roles {
-			if role(context, object) == false {
-				return context.NoContent(http.StatusUnauthorized)
+			if role(ctx, object) == false {
+				return ctx.NoContent(http.StatusUnauthorized)
 			}
 		}
 
+		// Double check that the ETag matches the object ~ used for optimistic locking.
+		if collection.isETagConflict(ctx, object.ETag()) {
+			return ctx.NoContent(http.StatusConflict)
+		}
+
 		// Try to update the record in the database
-		if err := service.DeleteObject(object, "DELETE COMMENT HERE"); err != nil {
-			err = derp.Wrap(err, "presto.Delete", "Error deleting object", object, RequestInfo(context)).Report()
-			return context.NoContent(err.Code)
+		if err := service.DeleteObject(object, ctx.Request().Header.Get("X-Comment")); err != nil {
+			err = derp.Wrap(err, "presto.Delete", "Error deleting object", object, RequestInfo(ctx)).Report()
+			return ctx.NoContent(err.Code)
 		}
 
 		// Try to remove the Etag from the cache
 		if cache := collection.getCache(); cache != nil {
-			if err := cache.Set(object.ID(), ""); err != nil {
+			if err := cache.Set(ctx.Path(), ""); err != nil {
 				err = derp.Wrap(err, "presto.Delete", "Error flushing ETag cache", object)
-				return context.NoContent(err.Code)
+				return ctx.NoContent(err.Code)
 			}
 		}
 
 		// Return the newly updated record to the caller.
-		return context.NoContent(http.StatusNoContent)
+		return ctx.NoContent(http.StatusNoContent)
 	}
 
 	// Register the handler with the router

@@ -1,6 +1,7 @@
 package presto
 
 import (
+	"github.com/benpate/criteria"
 	"github.com/benpate/derp"
 	"github.com/labstack/echo/v4"
 )
@@ -23,7 +24,7 @@ type Service interface {
 	NewObject() Object
 
 	// Load retrieves a single object from the database
-	LoadObject(objectID string) (Object, *derp.Error)
+	LoadObject(criteria criteria.Expression) (Object, *derp.Error)
 
 	// Save inserts/updates a single object in the database
 	SaveObject(object Object, comment string) *derp.Error

@@ -1,34 +1,34 @@
 package presto
 
 import "github.com/labstack/echo/v4"
+import "github.com/benpate/criteria"
 import "github.com/benpate/derp"
 
 // ScopeFunc is the function signature for a function that can limit database
 // queries to a particular "scope".  It inspects the provided context and
 // returns criteria that will be passed to all database queries.
-type ScopeFunc func(context echo.Context) (map[string]interface{}, *derp.Error)
+type ScopeFunc func(context echo.Context) (criteria.Expression, *derp.Error)
 
-// IDScope uses the :id parameter to return individual records based on their ID.
-// It is the default behavior for presto.
-func IDScope(context echo.Context) (map[string]interface{}, *derp.Error) {
+// RouteScope maps all of the route parameters directly into a scope, matching the names used in the route itself.
+// It is the default behavior for presto, and should serve most use cases.
+func RouteScope(ctx echo.Context) (criteria.Expression, *derp.Error) {
 
-	names := context.ParamNames()
-	result := map[string]interface{}{}
+	criteria := criteria.Expression{}
 
-	for index, param := range names {
+	for _, param := range ctx.ParamNames() {
 
-		// If "ID" is one of the route parameters, then look for a non-empty value
-		if param == "id" {
-			values := context.ParamValues()
-			if value := values[index]; value != "" {
-				result["_id"] = value
-				return result, nil
-			}
-
-			return result, derp.New(derp.CodeBadRequestError, "presto.scope.ID", "Invalid Object ID - Cannot be empty")
+		if value := ctx.Param(param); value != "" {
+			criteria.Add(param, "=", value)
+		} else {
+			return nil, derp.New(derp.CodeBadRequestError, "presto.RouteScope", "Parameter cannot be empty", param)
 		}
 	}
 
 	// Otherwise, scan all items.
-	return result, nil
+	return criteria, nil
+}
+
+// NotDeletedScope returns a criteria that limits results to all records that have not been deleted.
+func NotDeletedScope(ctx echo.Context) (criteria.Expression, *derp.Error) {
+	return criteria.Expression{{Name: "journal.deleteDate", Value: 0}}, nil
 }

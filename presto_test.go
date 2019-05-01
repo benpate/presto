@@ -6,6 +6,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/benpate/criteria"
 	"github.com/benpate/derp"
 	"github.com/benpate/remote"
 	"github.com/labstack/echo/v4"
@@ -16,6 +17,7 @@ func TestPresto(t *testing.T) {
 
 	db := testDB{}
 	factory := testFactory{db: &db}
+	filter := criteria.Expression{}
 
 	e := echo.New()
 
@@ -23,7 +25,7 @@ func TestPresto(t *testing.T) {
 		return ctx.NoContent(200)
 	})
 
-	NewCollection(e, &factory, "Persons", "/persons").
+	NewCollection(e, &factory, "Persons", "/persons", "personId").
 		Post().
 		Get().
 		Put().
@@ -58,7 +60,8 @@ func TestPresto(t *testing.T) {
 	}
 
 	// Confirm that the record was sent correctly.
-	if err := db.Load("Persons", john.PersonID, &person); err != nil {
+	filter = criteria.Expression{{"personId", "=", john.PersonID}}
+	if err := db.Load("Persons", filter, &person); err != nil {
 		err.Report()
 		assert.Fail(t, "Error loading new record from db", err)
 	}
@@ -85,7 +88,8 @@ func TestPresto(t *testing.T) {
 	}
 
 	// Confirm that the record was sent correctly.
-	if err := db.Load("Persons", sarah.PersonID, &person); err != nil {
+	filter = criteria.Expression{{"personId", "=", sarah.PersonID}}
+	if err := db.Load("Persons", filter, &person); err != nil {
 		err.Report()
 		assert.Fail(t, "Error loading new record", err)
 	}
@@ -166,11 +170,11 @@ func (service *testPersonService) NewObject() Object {
 	return &testPerson{}
 }
 
-func (service *testPersonService) LoadObject(personID string) (Object, *derp.Error) {
+func (service *testPersonService) LoadObject(filter criteria.Expression) (Object, *derp.Error) {
 
 	person := service.NewObject()
 
-	if err := service.session.Load("Persons", personID, person); err != nil {
+	if err := service.session.Load("Persons", filter, person); err != nil {
 		return nil, derp.Wrap(err, "testPersonService.Load", "Error Loading Person")
 	}
 
@@ -220,24 +224,27 @@ func (db *testDB) Session(ctx context.Context) *testDB {
 	return db
 }
 
-func (db *testDB) Load(collection string, objectID string, target Object) *derp.Error {
+func (db *testDB) Load(collection string, filter criteria.Expression, target Object) *derp.Error {
 
 	if collection, ok := (*db)[collection]; ok {
 
-		if document, ok := collection[objectID]; ok {
+		for _, document := range collection {
 
 			if person, ok := document.(*testPerson); ok {
-				switch target := target.(type) {
-				case *testPerson:
-					*target = *person
-					return nil
+
+				if filter.Match(*person) {
+
+					switch target := target.(type) {
+					case *testPerson:
+
+						*target = *person
+						return nil
+					}
 				}
 			}
-
-			return derp.New(500, "testDB.Load", "Document is an invalid type", document)
 		}
 
-		return derp.New(404, "testDB.Load", "Document does not exist", objectID)
+		return derp.New(404, "testDB.Load", "Document not found", filter)
 	}
 
 	return derp.New(404, "testDB.Load", "Collection does not exist", collection)

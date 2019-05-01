@@ -3,6 +3,7 @@ module github.com/benpate/presto
 go 1.12
 
 require (
+	github.com/benpate/criteria v0.2.0
 	github.com/benpate/derp v0.9.2
 	github.com/benpate/remote v0.5.4
 	github.com/labstack/echo/v4 v4.0.0

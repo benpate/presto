@@ -11,57 +11,68 @@ import (
 // Patch returns an HTTP handler that knows how to update in the collection
 func (collection *Collection) Patch(roles ...RoleFunc) *Collection {
 
-	handler := func(context echo.Context) error {
+	handler := func(ctx echo.Context) error {
 
 		service := collection.factory.Service(collection.name)
 		defer service.Close()
 
-		// TODO: Use SCOPE here.
-
-		// Try to load the record from the database
-		object, err := service.LoadObject(context.Param("id"))
+		// Use scoper functions to create query criteria for this object
+		filter, err := collection.getScope(ctx)
 
 		if err != nil {
-			err = derp.Wrap(err, "presto.Get", "Error loading object", RequestInfo(context)).Report()
-			return context.NoContent(err.Code)
+			err = derp.Wrap(err, "presto.Patch", "Error determining scope", ctx).Report()
+			return ctx.NoContent(err.Code)
+		}
+
+		// Try to load the record from the database
+		object, err := service.LoadObject(filter)
+
+		if err != nil {
+			err = derp.Wrap(err, "presto.Patch", "Error loading object", RequestInfo(ctx)).Report()
+			return ctx.NoContent(err.Code)
 		}
 
 		// Check roles (before update) to make sure that we're allowed to touch this object
 		for _, role := range roles {
-			if role(context, object) == false {
-				return context.NoContent(http.StatusUnauthorized)
+			if role(ctx, object) == false {
+				return ctx.NoContent(http.StatusUnauthorized)
 			}
 		}
 
+		// Double check that the ETag matches the object ~ used for optimistic locking.
+		if collection.isETagConflict(ctx, object.ETag()) {
+			return ctx.NoContent(http.StatusConflict)
+		}
+
 		// Update the object with new information
-		if er := context.Bind(object); er != nil {
-			err := derp.New(derp.CodeBadRequestError, "presto.Put", "Error binding object", er, object, RequestInfo(context)).Report()
-			return context.NoContent(err.Code)
+		if er := ctx.Bind(object); er != nil {
+			err := derp.New(derp.CodeBadRequestError, "presto.Patch", "Error binding object", er, object, RequestInfo(ctx)).Report()
+			return ctx.NoContent(err.Code)
 		}
 
 		// Check roles again (after update) to make sure that we're making valid changes that still let us "own" this object.
 		for _, role := range roles {
-			if role(context, object) == false {
-				return context.NoContent(http.StatusUnauthorized)
+			if role(ctx, object) == false {
+				return ctx.NoContent(http.StatusUnauthorized)
 			}
 		}
 
 		// Try to update the record in the database
-		if err := service.SaveObject(object, "SAVE COMMENT HERE"); err != nil {
-			err = derp.Wrap(err, "presto.Put", "Error saving object", object, RequestInfo(context)).Report()
-			return context.NoContent(err.Code)
+		if err := service.SaveObject(object, ctx.Request().Header.Get("X-Comment")); err != nil {
+			err = derp.Wrap(err, "presto.Patch", "Error saving object", object, RequestInfo(ctx)).Report()
+			return ctx.NoContent(err.Code)
 		}
 
 		// Try to update the ETag cache
 		if cache := collection.getCache(); cache != nil {
-			if err := cache.Set(object.ID(), object.ETag()); err != nil {
-				err = derp.Wrap(err, "presto.Put", "Error updating ETag cache", object).Report()
-				return context.NoContent(err.Code)
+			if err := cache.Set(ctx.Path(), object.ETag()); err != nil {
+				err = derp.Wrap(err, "presto.Patch", "Error updating ETag cache", object).Report()
+				return ctx.NoContent(err.Code)
 			}
 		}
 
 		// Return the newly updated record to the caller.
-		return context.JSON(http.StatusOK, object)
+		return ctx.JSON(http.StatusOK, object)
 	}
 
 	// Register the handler with the router
