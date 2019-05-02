@@ -40,7 +40,7 @@ func (collection *Collection) Patch(roles ...RoleFunc) *Collection {
 		}
 
 		// Double check that the ETag matches the object ~ used for optimistic locking.
-		if collection.isETagConflict(ctx, object.ETag()) {
+		if collection.isETagConflict(ctx, object) {
 			return ctx.NoContent(http.StatusConflict)
 		}
 
@@ -64,10 +64,12 @@ func (collection *Collection) Patch(roles ...RoleFunc) *Collection {
 		}
 
 		// Try to update the ETag cache
-		if cache := collection.getCache(); cache != nil {
-			if err := cache.Set(ctx.Path(), object.ETag()); err != nil {
-				err = derp.Wrap(err, "presto.Patch", "Error updating ETag cache", object).Report()
-				return ctx.NoContent(err.Code)
+		if object, ok := object.(ETagger); ok {
+			if cache := collection.getCache(); cache != nil {
+				if err := cache.Set(ctx.Path(), object.ETag()); err != nil {
+					err = derp.Wrap(err, "presto.Patch", "Error updating ETag cache", object).Report()
+					return ctx.NoContent(err.Code)
+				}
 			}
 		}
 

@@ -39,7 +39,7 @@ func (collection *Collection) Delete(roles ...RoleFunc) *Collection {
 		}
 
 		// Double check that the ETag matches the object ~ used for optimistic locking.
-		if collection.isETagConflict(ctx, object.ETag()) {
+		if collection.isETagConflict(ctx, object) {
 			return ctx.NoContent(http.StatusConflict)
 		}
 

@@ -44,10 +44,12 @@ func (collection *Collection) Get(roles ...RoleFunc) *Collection {
 		}
 
 		// Try to update the ETag in the cache
-		if cache := collection.getCache(); cache != nil {
-			if err := cache.Set(ctx.Path(), object.ETag()); err != nil {
-				err = derp.Wrap(err, "presto.Get", "Error setting cache value", object).Report()
-				return ctx.NoContent(err.Code)
+		if object, ok := object.(ETagger); ok {
+			if cache := collection.getCache(); cache != nil {
+				if err := cache.Set(ctx.Path(), object.ETag()); err != nil {
+					err = derp.Wrap(err, "presto.Get", "Error setting cache value", object).Report()
+					return ctx.NoContent(err.Code)
+				}
 			}
 		}
 

@@ -56,6 +56,9 @@ type Object interface {
 
 	// SetDeleted marks the object virtually "deleted", and makes a note
 	SetDeleted(comment string)
+}
+
+type ETagger interface {
 
 	// ETag returns a version-unique string that helps determine if an object has changed or not.
 	ETag() string

@@ -57,18 +57,23 @@ func (collection *Collection) getCache() Cache {
 // isEtagConflict returns TRUE if the provided ETag DOES NOT match the value in the cache.
 // This is used for (very) optimistic locking.  If this returns a FALSE, then the value
 // must STILL be double checked AFTER we load the object, because its might not be in the cache.
-func (collection *Collection) isETagConflict(ctx echo.Context, etag string) bool {
+func (collection *Collection) isETagConflict(ctx echo.Context, object Object) bool {
 
-	// If there is NO ETag for this object, then there's no conflict.  Return FALSE
-	if etag == "" {
-		return false
-	}
+	if object, ok := object.(ETagger); ok {
 
-	// Try to get the ETag from the request headers.
-	if headerValue := ctx.Request().Header.Get("ETag"); headerValue != "" {
+		etag := object.ETag()
 
-		if etag != headerValue {
-			return true
+		// If there is NO ETag for this object, then there's no conflict.  Return FALSE
+		if etag == "" {
+			return false
+		}
+
+		// Try to get the ETag from the request headers.
+		if headerValue := ctx.Request().Header.Get("ETag"); headerValue != "" {
+
+			if etag != headerValue {
+				return true
+			}
 		}
 	}
 

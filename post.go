@@ -39,10 +39,12 @@ func (collection *Collection) Post(roles ...RoleFunc) *Collection {
 		}
 
 		// Try to reset the ETag cache
-		if cache := collection.getCache(); cache != nil {
-			if err := cache.Set(ctx.Path(), object.ETag()); err != nil {
-				err = derp.Wrap(err, "presto.Post", "Error setting cache value", object)
-				return ctx.NoContent(err.Code)
+		if object, ok := object.(ETagger); ok {
+			if cache := collection.getCache(); cache != nil {
+				if err := cache.Set(ctx.Path(), object.ETag()); err != nil {
+					err = derp.Wrap(err, "presto.Post", "Error setting cache value", object)
+					return ctx.NoContent(err.Code)
+				}
 			}
 		}
 
