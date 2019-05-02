@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/benpate/criteria"
+	"github.com/benpate/data"
 	"github.com/benpate/derp"
 	"github.com/benpate/remote"
 	"github.com/labstack/echo/v4"
@@ -17,7 +17,7 @@ func TestPresto(t *testing.T) {
 
 	db := testDB{}
 	factory := testFactory{db: &db}
-	filter := criteria.Expression{}
+	criteria := data.Expression{}
 
 	e := echo.New()
 
@@ -60,8 +60,8 @@ func TestPresto(t *testing.T) {
 	}
 
 	// Confirm that the record was sent correctly.
-	filter = criteria.Expression{{"personId", "=", john.PersonID}}
-	if err := db.Load("Persons", filter, &person); err != nil {
+	criteria = data.Expression{{"personId", "=", john.PersonID}}
+	if err := db.Load("Persons", criteria, &person); err != nil {
 		err.Report()
 		assert.Fail(t, "Error loading new record from db", err)
 	}
@@ -88,8 +88,8 @@ func TestPresto(t *testing.T) {
 	}
 
 	// Confirm that the record was sent correctly.
-	filter = criteria.Expression{{"personId", "=", sarah.PersonID}}
-	if err := db.Load("Persons", filter, &person); err != nil {
+	criteria = data.Expression{{"personId", "=", sarah.PersonID}}
+	if err := db.Load("Persons", criteria, &person); err != nil {
 		err.Report()
 		assert.Fail(t, "Error loading new record", err)
 	}
@@ -166,22 +166,22 @@ type testPersonService struct {
 	session *testDB
 }
 
-func (service *testPersonService) NewObject() Object {
+func (service *testPersonService) NewObject() data.Object {
 	return &testPerson{}
 }
 
-func (service *testPersonService) LoadObject(filter criteria.Expression) (Object, *derp.Error) {
+func (service *testPersonService) LoadObject(criteria data.Expression) (data.Object, *derp.Error) {
 
 	person := service.NewObject()
 
-	if err := service.session.Load("Persons", filter, person); err != nil {
+	if err := service.session.Load("Persons", criteria, person); err != nil {
 		return nil, derp.Wrap(err, "testPersonService.Load", "Error Loading Person")
 	}
 
 	return person, nil
 }
 
-func (service *testPersonService) SaveObject(person Object, note string) *derp.Error {
+func (service *testPersonService) SaveObject(person data.Object, note string) *derp.Error {
 
 	if err := service.session.Save("Persons", person, note); err != nil {
 		return derp.Wrap(err, "testPersonService.Save", "Error Saving Person", person)
@@ -190,7 +190,7 @@ func (service *testPersonService) SaveObject(person Object, note string) *derp.E
 	return nil
 }
 
-func (service *testPersonService) DeleteObject(person Object, note string) *derp.Error {
+func (service *testPersonService) DeleteObject(person data.Object, note string) *derp.Error {
 
 	if err := service.session.Delete("Persons", person, note); err != nil {
 		return derp.Wrap(err, "testPersonService.Delete", "Error Deleting Person", person)
@@ -218,13 +218,13 @@ func (factory *testFactory) Service(string) Service {
 // DATABASE OBJECT
 type testDB map[string]testCollection
 
-type testCollection map[string]Object
+type testCollection map[string]data.Object
 
 func (db *testDB) Session(ctx context.Context) *testDB {
 	return db
 }
 
-func (db *testDB) Load(collection string, filter criteria.Expression, target Object) *derp.Error {
+func (db *testDB) Load(collection string, criteria data.Expression, target data.Object) *derp.Error {
 
 	if collection, ok := (*db)[collection]; ok {
 
@@ -232,7 +232,7 @@ func (db *testDB) Load(collection string, filter criteria.Expression, target Obj
 
 			if person, ok := document.(*testPerson); ok {
 
-				if filter.Match(*person) {
+				if criteria.Match(*person) {
 
 					switch target := target.(type) {
 					case *testPerson:
@@ -244,13 +244,13 @@ func (db *testDB) Load(collection string, filter criteria.Expression, target Obj
 			}
 		}
 
-		return derp.New(404, "testDB.Load", "Document not found", filter)
+		return derp.New(404, "testDB.Load", "Document not found", criteria)
 	}
 
 	return derp.New(404, "testDB.Load", "Collection does not exist", collection)
 }
 
-func (db *testDB) Save(collection string, object Object, comment string) *derp.Error {
+func (db *testDB) Save(collection string, object data.Object, comment string) *derp.Error {
 
 	if strings.HasPrefix(comment, "ERROR") {
 		return derp.New(500, "testDB.Save", "Synthetic Error", comment)
@@ -269,7 +269,7 @@ func (db *testDB) Save(collection string, object Object, comment string) *derp.E
 	return nil
 }
 
-func (db *testDB) Delete(collection string, object Object, comment string) *derp.Error {
+func (db *testDB) Delete(collection string, object data.Object, comment string) *derp.Error {
 
 	if strings.HasPrefix(comment, "ERROR") {
 		return derp.New(500, "testDB.Delete", "Synthetic Error", comment)

@@ -16,7 +16,7 @@ func (collection *Collection) Delete(roles ...RoleFunc) *Collection {
 		defer service.Close()
 
 		// Use scoper functions to create query criteria for this object
-		filter, err := collection.getScope(ctx)
+		criteria, err := collection.getScope(ctx)
 
 		if err != nil {
 			err = derp.Wrap(err, "presto.Delete", "Error determining scope", ctx).Report()
@@ -24,7 +24,7 @@ func (collection *Collection) Delete(roles ...RoleFunc) *Collection {
 		}
 
 		// Try to load the record from the database
-		object, err := service.LoadObject(filter)
+		object, err := service.LoadObject(criteria)
 
 		if err != nil {
 			err = derp.Wrap(err, "presto.Delete", "Error loading object", RequestInfo(ctx)).Report()

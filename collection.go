@@ -1,7 +1,7 @@
 package presto
 
 import (
-	"github.com/benpate/criteria"
+	"github.com/benpate/data"
 	"github.com/benpate/derp"
 	"github.com/labstack/echo/v4"
 )
@@ -57,7 +57,7 @@ func (collection *Collection) getCache() Cache {
 // isEtagConflict returns TRUE if the provided ETag DOES NOT match the value in the cache.
 // This is used for (very) optimistic locking.  If this returns a FALSE, then the value
 // must STILL be double checked AFTER we load the object, because its might not be in the cache.
-func (collection *Collection) isETagConflict(ctx echo.Context, object Object) bool {
+func (collection *Collection) isETagConflict(ctx echo.Context, object data.Object) bool {
 
 	if object, ok := object.(ETagger); ok {
 
@@ -80,10 +80,10 @@ func (collection *Collection) isETagConflict(ctx echo.Context, object Object) bo
 	return false
 }
 
-// getScope executes each scoper function for this context and returns a criteria expression
-func (collection *Collection) getScope(ctx echo.Context) (criteria.Expression, *derp.Error) {
+// getScope executes each scoper function for this context and returns a data expression
+func (collection *Collection) getScope(ctx echo.Context) (data.Expression, *derp.Error) {
 
-	result := criteria.Expression{}
+	result := data.Expression{}
 
 	for _, scope := range collection.scopes {
 
