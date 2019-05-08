@@ -10,8 +10,12 @@
 Presto is a thin wrapper library that helps structure and simplify the REST interfaces you create in [Go](https://golang.org). Its purpose is to encapsulate all of the boilerplate code that is commonly required to publish a server-side service via a REST interface.  Using Presto, your route configuration code looks like this:
 
 ```go
-// Define a new service to expose online as a REST collection.
-presto.NewCollection(echo.Echo, NoteFactory, "/notes").
+
+// Presto requires the echo router by Labstack.  Let's create a new instance of echo first.
+e := echo.New()
+
+// Define a new service to expose online as a REST collection. (Services, Factories, Scopes and Roles defined below)
+presto.NewCollection(e, NoteFactory, "/notes").
     List().
     Post(role.InRoom).
     Get(role.InRoom).
@@ -49,11 +53,41 @@ Presto does not replace your application business logic.  It only exposes your i
 
 The specific work of creating services and objects is pushed out to a Factory object, which provides a map of your complete domain.  The factories also manage dependencies (such as a live database connection) for each service that requires it.  Here's an example factory:
 
+
+## Boilerplate REST Endpoints
+
+Presto implements six standard REST endpoints that are defined in the REST API Design Rulebook, and should serve a majority of your needs.
+
+### List
+
+### Post
+
+### Get
+
+### Put
+
+### Patch
+
+### Delete
+
+## Methods: Custom REST Endpoints
+
+There are many cases where these six default endpoints are not enough, such as when you have to initiate a specific transaction.  A good example of this is a "checkout" function in a shopping cart.  The REST API Design Rulebook labels these actions as "Methods", and states that these transactions should always be registered as a POST handler.  Presto helps you to manage these functions as well, using the following calls:
+
+```go
+
+// The following code will registera POST handler on the route `/cart/checkout`, using the function `CheckoutHandler`
+presto.NewCollection(echo.Echo, factory.Cart, "/cart").
+    Method("/checkout", CheckoutHandler, roles)
+```
+
 ## Scopes and Database Criteria
 
 Your REST server should be able to limit the records accessed though the website, for instance, hiding records that have been virtually deleted, or limiting users in a multi-tennant database to only see the records for their virtual account.  Presto accomplishes this using `scopes`, and `ScopeFuncs` which are functions that inspect the `echo.Context` and return a `data.Expression` that limits users access.  The [data](https://github.com/benpate/data) package is used to create an intermediate representation of the query criteria that can then be interpreted into the specific formats used by your database system.  Here's an example of some ScopeFunc functions.
 
 ```go
+
+/// IN YOUR `SCOPES` PACKAGE
 
 // NotDeleted filters out all records that have not been "virtually deleted" from the database.
 func NotDeleted(ctx echo.Context) (data.Expression, *derp.Error) {
@@ -80,6 +114,18 @@ func Route(ctx echo.Context) (data.Expression, *derp.Error) {
     return data.Expression{}, derp.New(derp.CodeBadRequestError, "example.Route", "Invalid PersonID", personID)
 }
 
+
+/// IN YOUR PRESTO CONFIGURATION
+
+// This overrides the default scopeing function, and uses the
+// NotDeleted function for all routes in your API instead.
+presto.WithScope(scope.NotDeleted)
+
+// This configures this specific collection to limit all
+// database queries using the `ByUsername` scope, in addition
+// to the globally defined `NotDeleted` scope declared above.
+presto.NewCollection(e, PersonFactory, "/person").
+    WithScope(scope.ByUsername)
 ```
 
 ## User Roles
@@ -122,31 +168,4 @@ func InRoom(ctx echo.Context, object Object) bool {
     return false;
 }
 
-```
-
-## Boilerplate REST Endpoints
-
-Presto implements six standard REST endpoints that are defined in the REST API Design Rulebook, and should serve a majority of your needs.
-
-### List
-
-### Post
-
-### Get
-
-### Put
-
-### Patch
-
-### Delete
-
-## Methods: Custom REST Endpoints
-
-There are many cases where these six default endpoints are not enough, such as when you have to initiate a specific transaction.  A good example of this is a "checkout" function in a shopping cart.  The REST API Design Rulebook labels these actions as "Methods", and states that these transactions should always be registered as a POST handler.  Presto helps you to manage these functions as well, using the following calls:
-
-```go
-
-// The following code will registera POST handler on the route `/cart/checkout`, using the function `CheckoutHandler`
-presto.NewCollection(echo.Echo, factory.Cart, "/cart").
-    Method("/checkout", CheckoutHandler, roles)
 ```
