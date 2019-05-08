@@ -15,6 +15,8 @@ import (
 
 func TestPresto(t *testing.T) {
 
+	WithScopes()
+
 	db := testDB{}
 	factory := testFactory{db: &db}
 	criteria := data.Expression{}

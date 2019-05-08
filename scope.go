@@ -9,9 +9,9 @@ import "github.com/benpate/derp"
 // returns criteria that will be passed to all database queries.
 type ScopeFunc func(context echo.Context) (data.Expression, *derp.Error)
 
-// RouteScope maps all of the route parameters directly into a scope, matching the names used in the route itself.
+// DefaultScope maps all of the route parameters directly into a scope, matching the names used in the route itself.
 // It is the default behavior for presto, and should serve most use cases.
-func RouteScope(ctx echo.Context) (data.Expression, *derp.Error) {
+func DefaultScope(ctx echo.Context) (data.Expression, *derp.Error) {
 
 	criteria := data.Expression{}
 
@@ -26,9 +26,4 @@ func RouteScope(ctx echo.Context) (data.Expression, *derp.Error) {
 
 	// Otherwise, scan all items.
 	return criteria, nil
-}
-
-// NotDeletedScope returns a criteria that limits results to all records that have not been deleted.
-func NotDeletedScope(ctx echo.Context) (data.Expression, *derp.Error) {
-	return data.Expression{{Name: "journal.deleteDate", Value: 0}}, nil
 }

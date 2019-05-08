@@ -25,7 +25,7 @@ func NewCollection(router *echo.Echo, factory ServiceFactory, name string, prefi
 		factory: factory,
 		name:    name,
 		prefix:  prefix,
-		scopes:  []ScopeFunc{RouteScope},
+		scopes:  []ScopeFunc{DefaultScope},
 		token:   token,
 	}
 }
@@ -54,6 +54,39 @@ func (collection *Collection) getCache() Cache {
 	return globalCache
 }
 
+// getScope executes each scoper function for this context and returns a data expression
+func (collection *Collection) getScope(ctx echo.Context) (data.Expression, *derp.Error) {
+
+	result := data.Expression{}
+
+	if globalScopes != nil {
+
+		for _, scope := range globalScopes {
+
+			next, err := scope(ctx)
+
+			if err != nil {
+				return result, derp.Wrap(err, "presto.getScope", "Error executing global scope function")
+			}
+
+			result = result.Join(next)
+		}
+	}
+
+	for _, scope := range collection.scopes {
+
+		next, err := scope(ctx)
+
+		if err != nil {
+			return result, derp.Wrap(err, "presto.getScope", "Error executing scope function")
+		}
+
+		result = result.Join(next)
+	}
+
+	return result, nil
+}
+
 // isEtagConflict returns TRUE if the provided ETag DOES NOT match the value in the cache.
 // This is used for (very) optimistic locking.  If this returns a FALSE, then the value
 // must STILL be double checked AFTER we load the object, because its might not be in the cache.
@@ -78,23 +111,4 @@ func (collection *Collection) isETagConflict(ctx echo.Context, object data.Objec
 	}
 
 	return false
-}
-
-// getScope executes each scoper function for this context and returns a data expression
-func (collection *Collection) getScope(ctx echo.Context) (data.Expression, *derp.Error) {
-
-	result := data.Expression{}
-
-	for _, scope := range collection.scopes {
-
-		next, err := scope(ctx)
-
-		if err != nil {
-			return result, derp.Wrap(err, "presto.getScope", "Error executing scope function")
-		}
-
-		result = result.Join(next)
-	}
-
-	return result, nil
 }
