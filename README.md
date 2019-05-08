@@ -168,3 +168,11 @@ func InRoom(ctx echo.Context, object Object) bool {
 }
 
 ```
+
+## Performance: Caching, ETag Support
+
+### Cache
+
+### ETags
+
+### Using ETags for Optimistic Locking
