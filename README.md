@@ -53,8 +53,7 @@ Presto does not replace your application business logic.  It only exposes your i
 
 The specific work of creating services and objects is pushed out to a Factory object, which provides a map of your complete domain.  The factories also manage dependencies (such as a live database connection) for each service that requires it.  Here's an example factory:
 
-
-## Boilerplate REST Endpoints
+## REST Endpoints: Defaults
 
 Presto implements six standard REST endpoints that are defined in the REST API Design Rulebook, and should serve a majority of your needs.
 
@@ -70,7 +69,7 @@ Presto implements six standard REST endpoints that are defined in the REST API D
 
 ### Delete
 
-## Methods: Custom REST Endpoints
+## REST Endpoints: Custom Methods
 
 There are many cases where these six default endpoints are not enough, such as when you have to initiate a specific transaction.  A good example of this is a "checkout" function in a shopping cart.  The REST API Design Rulebook labels these actions as "Methods", and states that these transactions should always be registered as a POST handler.  Presto helps you to manage these functions as well, using the following calls:
 
