@@ -78,7 +78,7 @@ func (collection *Collection) Patch(roles ...RoleFunc) *Collection {
 	}
 
 	// Register the handler with the router
-	collection.router.PATCH(collection.prefix+"/:id", handler)
+	collection.router.PATCH(collection.prefix+"/:"+collection.token, handler)
 
 	// Return the collection so that we can chain requests.
 	return collection

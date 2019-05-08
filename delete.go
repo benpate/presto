@@ -62,7 +62,7 @@ func (collection *Collection) Delete(roles ...RoleFunc) *Collection {
 	}
 
 	// Register the handler with the router
-	collection.router.DELETE(collection.prefix+"/:id", handler)
+	collection.router.DELETE(collection.prefix+"/:"+collection.token, handler)
 
 	// Return the collection, so that we can chain function calls.
 	return collection

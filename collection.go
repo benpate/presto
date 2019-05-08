@@ -19,14 +19,14 @@ type Collection struct {
 }
 
 // NewCollection returns a fully populated Collection object
-func NewCollection(router *echo.Echo, factory ServiceFactory, name string, prefix string, token string) *Collection {
+func NewCollection(router *echo.Echo, factory ServiceFactory, name string, prefix string) *Collection {
 	return &Collection{
 		router:  router,
 		factory: factory,
 		name:    name,
 		prefix:  prefix,
 		scopes:  []ScopeFunc{DefaultScope},
-		token:   token,
+		token:   "id",
 	}
 }
 
@@ -40,6 +40,14 @@ func (collection *Collection) WithScopes(scopes ...ScopeFunc) *Collection {
 // WithCache adds a local ETag cache for this collection only
 func (collection *Collection) WithCache(cache Cache) *Collection {
 	collection.cache = cache
+
+	return collection
+}
+
+// WithToken overrides the default "token" variable that is appended to all GET, PUT, PATCH, and DELETE
+// routes, and is used as the unique identifier of the record being created, read, updated, or deleted.
+func (collection *Collection) WithToken(token string) *Collection {
+	collection.token = token
 
 	return collection
 }

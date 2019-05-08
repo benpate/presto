@@ -27,7 +27,8 @@ func TestPresto(t *testing.T) {
 		return ctx.NoContent(200)
 	})
 
-	NewCollection(e, &factory, "Persons", "/persons", "personId").
+	NewCollection(e, &factory, "Persons", "/persons").
+		WithToken("personId").
 		Post().
 		Get().
 		Put().

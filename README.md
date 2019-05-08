@@ -25,7 +25,9 @@ presto.NewCollection(echo.Echo, NoteFactory, "/notes").
 
 ### Clean Architecture
 
-Presto lays the groundword to implement a REST API according to the [CLEAN architecture, first published by Uncle Bob](https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html).  This means decoupling business logic and databases, by injecting dependencies down through your application.  To do this in a type-safe manner, Presto requires that your services and objects fit into its interfaces, which  describe minimal behavior that each must support in order to be used by Presto. Once Presto is able to work with your business logic in an abstract way, the rest of the common code is repeated for each API endpoint you need to create.
+Presto lays the groundword to implement a REST API according to the [CLEAN architecture, first published by Uncle Bob](https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html).  This means decoupling business logic and databases, by injecting dependencies down through your application.  To do this in a type-safe manner, Presto requires that your services and objects fit into its interfaces, which  describe minimal behavior that each must support in order to be used by Presto.
+
+Presto also uses the [data package](https://github.com/benpate/data) as an abstract representation of some common database concepts, such as query criteria.  This allows you to swap in any database by building an adapter that implements the `data` interfaces.  Once Presto is able to work with your business logic in an abstract way, the rest of the common code is repeated for each API endpoint you need to create.
 
 ### REST API Design Rulebook
 
@@ -37,19 +39,46 @@ Presto works hard to implement REST APIs according to the patterns laid out in t
 
 ### Minimal Dependencies
 
-Presto's only dependency is on the Echo router, which is a very fast, open-source router for creating HTTP servers in Go.  Our ultimate goal with this package is to remove this as a hard dependency eventually, and refactor this code to work with multiple routers in the Go ecosystem.
+Presto's only dependency is on the [fast and fabulous Echo router](https://github.com/labstack/echo), which is an open-source package for creating HTTP servers in Go.  Our ultimate goal with this package is to remove this as a hard dependency eventually, and refactor this code to work with multiple routers in the Go ecosystem.
 
 ## Services
 
-Presto does not replace your application business logic.  It only exposes your internal services via a REST API. Each endpoint must be linked to a corresponding
-service (that matches Presto's required interface) to handle the actual loading, saving, and deleting of objects.
+Presto does not replace your application business logic.  It only exposes your internal services via a REST API. Each endpoint must be linked to a corresponding service (that matches Presto's required interface) to handle the actual loading, saving, and deleting of objects.
 
 ## Factories
 
 The specific work of creating services and objects is pushed out to a Factory object, which provides a map of your complete domain.  The factories also manage dependencies (such as a live database connection) for each service that requires it.  Here's an example factory:
 
+## Scopes and Database Criteria
+
+Your REST server should be able to limit the records accessed though the website, for instance, hiding records that have been virtually deleted, or limiting users in a multi-tennant database to only see the records for their virtual account.  Presto accomplishes this using `scopes`, and `ScopeFuncs` which are functions that inspect the `echo.Context` and return a `data.Expression` that limits users access.  The [data](https://github.com/benpate/data) package is used to create an intermediate representation of the query criteria that can then be interpreted into the specific formats used by your database system.  Here's an example of some ScopeFunc functions.
+
 ```go
 
+// NotDeleted filters out all records that have not been "virtually deleted" from the database.
+func NotDeleted(ctx echo.Context) (data.Expression, *derp.Error) {
+    return data.Expression{{"journal.deleteDate", data.OperatorEqual, 0}}, nil
+}
+
+
+// ByPersonID uses the route Param "personId" to limit requests to records that include that personId only.
+func Route(ctx echo.Context) (data.Expression, *derp.Error) {
+
+    personID := ctx.Param("personId")
+
+    // If the personID is empty, then return an error to the caller..
+    if personID == "" {
+        return data.Expression{}, derp.New(derp.CodeBadRequestError, "example.Route", "Empty PersonID", personID)
+    }
+
+    // Convert the parameter value into a bson.ObjectID and return the expression
+    if personID, err := primitive.ObjectIDFromHex(personID); err != nil {
+        return data.Expression{{"personId", data.OperatorEqual, personId}}, nil
+    }
+
+    // Fall through to here means that we couldn't convert the personID into a valid ObjectID.  Return an error.
+    return data.Expression{}, derp.New(derp.CodeBadRequestError, "example.Route", "Invalid PersonID", personID)
+}
 
 ```
 
@@ -95,8 +124,29 @@ func InRoom(ctx echo.Context, object Object) bool {
 
 ```
 
-## Selectors
-
 ## Boilerplate REST Endpoints
 
-## Custom REST Endpoints
+Presto implements six standard REST endpoints that are defined in the REST API Design Rulebook, and should serve a majority of your needs.
+
+### List
+
+### Post
+
+### Get
+
+### Put
+
+### Patch
+
+### Delete
+
+## Methods: Custom REST Endpoints
+
+There are many cases where these six default endpoints are not enough, such as when you have to initiate a specific transaction.  A good example of this is a "checkout" function in a shopping cart.  The REST API Design Rulebook labels these actions as "Methods", and states that these transactions should always be registered as a POST handler.  Presto helps you to manage these functions as well, using the following calls:
+
+```go
+
+// The following code will registera POST handler on the route `/cart/checkout`, using the function `CheckoutHandler`
+presto.NewCollection(echo.Echo, factory.Cart, "/cart").
+    Method("/checkout", CheckoutHandler, roles)
+```

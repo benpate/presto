@@ -99,7 +99,7 @@ func (collection *Collection) Put(roles ...RoleFunc) *Collection {
 	}
 
 	// Register the handler with the router
-	collection.router.PUT(collection.prefix+"/:id", handler)
+	collection.router.PUT(collection.prefix+"/:"+collection.token, handler)
 
 	// Return the collection so that users can chain requests
 	return collection
