@@ -3,9 +3,8 @@ package presto
 import (
 	"net/http"
 
-	"github.com/labstack/echo/v4"
-
 	"github.com/benpate/derp"
+	"github.com/labstack/echo/v4"
 )
 
 // Post returns an HTTP handler that knows how to create new objects in the collection

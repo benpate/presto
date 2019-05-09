@@ -10,7 +10,6 @@ import (
 // or collection of records
 type Collection struct {
 	factory ServiceFunc
-	name    string
 	prefix  string
 	scopes  []ScopeFunc
 	cache   Cache
@@ -18,10 +17,9 @@ type Collection struct {
 }
 
 // NewCollection returns a fully populated Collection object
-func NewCollection(factory ServiceFunc, name string, prefix string) *Collection {
+func NewCollection(factory ServiceFunc, prefix string) *Collection {
 	return &Collection{
 		factory: factory,
-		name:    name,
 		prefix:  prefix,
 		scopes:  []ScopeFunc{DefaultScope},
 		token:   "id",

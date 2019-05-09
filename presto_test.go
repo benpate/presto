@@ -29,7 +29,7 @@ func TestPresto(t *testing.T) {
 
 	UseRouter(e)
 
-	NewCollection(factory, "Persons", "/persons").
+	NewCollection(factory, "/persons").
 		UseToken("personId").
 		Post().
 		Get().
