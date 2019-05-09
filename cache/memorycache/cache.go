@@ -1,4 +1,4 @@
-package cache
+package memorycache
 
 import "github.com/benpate/derp"
 
@@ -7,8 +7,8 @@ import "github.com/benpate/derp"
 // production system.  DO NOT USE THIS IN PRODUCTION.
 type Memory map[string]string
 
-// NewMemory returns a fully initialized memory cache
-func NewMemory() *Memory {
+// New returns a fully initialized memory cache
+func New() *Memory {
 	return &Memory{}
 }
 
