@@ -16,13 +16,14 @@ func TestScope(t *testing.T) {
 		String  string
 	}
 
-	WithScopes(func(ctx echo.Context) (data.Expression, *derp.Error) {
+	e := echo.New()
+	UseRouter(nil)
+
+	UseScopes(func(ctx echo.Context) (data.Expression, *derp.Error) {
 		return data.Expression{{"integer", "=", 42}}, nil
 	})
 
 	collection := Collection{}
-
-	e := echo.New()
 
 	ctx := e.NewContext(nil, nil)
 
@@ -45,7 +46,7 @@ func TestScope(t *testing.T) {
 	assert.False(t, expression.Match(record))
 
 	// Test scopes attached to the collection
-	collection.WithScopes(func(ctx echo.Context) (data.Expression, *derp.Error) {
+	collection.UseScopes(func(ctx echo.Context) (data.Expression, *derp.Error) {
 		return data.Expression{{"string", "=", "hey-oh"}}, nil
 	})
 

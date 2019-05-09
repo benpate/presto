@@ -9,8 +9,7 @@ import (
 // Collection provides all of the HTTP hanlers for a specific domain object,
 // or collection of records
 type Collection struct {
-	router  *echo.Echo
-	factory ServiceFactory
+	factory ServiceFunc
 	name    string
 	prefix  string
 	scopes  []ScopeFunc
@@ -19,9 +18,8 @@ type Collection struct {
 }
 
 // NewCollection returns a fully populated Collection object
-func NewCollection(router *echo.Echo, factory ServiceFactory, name string, prefix string) *Collection {
+func NewCollection(factory ServiceFunc, name string, prefix string) *Collection {
 	return &Collection{
-		router:  router,
 		factory: factory,
 		name:    name,
 		prefix:  prefix,
@@ -30,23 +28,23 @@ func NewCollection(router *echo.Echo, factory ServiceFactory, name string, prefi
 	}
 }
 
-// WithScopes replaces the default scope with a new list of ScopeFuncs
-func (collection *Collection) WithScopes(scopes ...ScopeFunc) *Collection {
+// UseScopes replaces the default scope with a new list of ScopeFuncs
+func (collection *Collection) UseScopes(scopes ...ScopeFunc) *Collection {
 	collection.scopes = scopes
 
 	return collection
 }
 
-// WithCache adds a local ETag cache for this collection only
-func (collection *Collection) WithCache(cache Cache) *Collection {
+// UseCache adds a local ETag cache for this collection only
+func (collection *Collection) UseCache(cache Cache) *Collection {
 	collection.cache = cache
 
 	return collection
 }
 
-// WithToken overrides the default "token" variable that is appended to all GET, PUT, PATCH, and DELETE
+// UseToken overrides the default "token" variable that is appended to all GET, PUT, PATCH, and DELETE
 // routes, and is used as the unique identifier of the record being created, read, updated, or deleted.
-func (collection *Collection) WithToken(token string) *Collection {
+func (collection *Collection) UseToken(token string) *Collection {
 	collection.token = token
 
 	return collection

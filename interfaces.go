@@ -6,13 +6,11 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-// ServiceFactory is an interface for objects that generate service sessions.
+// ServiceFunc is a function that can generate new services/sessions.
 // Each session represents a single HTTP request, which can potentially span
 // multiple database calls.  This gives the factory an opportunity to
 // initialize a new database session for each HTTP request.
-type ServiceFactory interface {
-	Service(name string) Service
-}
+type ServiceFunc func() Service
 
 // Service defines all of the functions that a service must provide to work with Presto.
 // It relies on the generic Object interface to load and save objects of any type.

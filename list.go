@@ -12,7 +12,7 @@ func (collection *Collection) List(roles ...RoleFunc) *Collection {
 	}
 
 	// Register handler with the router
-	collection.router.GET(collection.prefix, handler)
+	globalRouter.GET(collection.prefix, handler)
 
 	// Return collection, so that we can chain calls if needed.
 	return collection

@@ -12,7 +12,7 @@ func (collection *Collection) Delete(roles ...RoleFunc) *Collection {
 
 	handler := func(ctx echo.Context) error {
 
-		service := collection.factory.Service(collection.name)
+		service := collection.factory()
 		defer service.Close()
 
 		// Use scoper functions to create query criteria for this object
@@ -62,7 +62,7 @@ func (collection *Collection) Delete(roles ...RoleFunc) *Collection {
 	}
 
 	// Register the handler with the router
-	collection.router.DELETE(collection.prefix+"/:"+collection.token, handler)
+	globalRouter.DELETE(collection.prefix+"/:"+collection.token, handler)
 
 	// Return the collection, so that we can chain function calls.
 	return collection

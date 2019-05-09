@@ -15,10 +15,10 @@ import (
 
 func TestPresto(t *testing.T) {
 
-	WithScopes()
+	UseScopes()
 
 	db := testDB{}
-	factory := testFactory{db: &db}
+	factory := testFactory(&db)
 	criteria := data.Expression{}
 
 	e := echo.New()
@@ -27,8 +27,10 @@ func TestPresto(t *testing.T) {
 		return ctx.NoContent(200)
 	})
 
-	NewCollection(e, &factory, "Persons", "/persons").
-		WithToken("personId").
+	UseRouter(e)
+
+	NewCollection(factory, "Persons", "/persons").
+		UseToken("personId").
 		Post().
 		Get().
 		Put().
@@ -205,16 +207,15 @@ func (service *testPersonService) DeleteObject(person data.Object, note string) 
 func (service *testPersonService) Close() {}
 
 // FACTORY OBJECT
-type testFactory struct {
-	db *testDB
-}
 
-func (factory *testFactory) Service(string) Service {
+func testFactory(db *testDB) ServiceFunc {
 
-	ctx := context.TODO()
+	return func() Service {
+		ctx := context.TODO()
 
-	return &testPersonService{
-		session: factory.db.Session(ctx),
+		return &testPersonService{
+			session: db.Session(ctx),
+		}
 	}
 }
 

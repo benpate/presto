@@ -13,7 +13,7 @@ func (collection *Collection) Post(roles ...RoleFunc) *Collection {
 
 	handler := func(ctx echo.Context) error {
 
-		service := collection.factory.Service(collection.name)
+		service := collection.factory()
 		defer service.Close()
 
 		// Create a new, empty object
@@ -52,7 +52,7 @@ func (collection *Collection) Post(roles ...RoleFunc) *Collection {
 		return ctx.JSON(http.StatusOK, object)
 	}
 
-	collection.router.POST(collection.prefix, handler)
+	globalRouter.POST(collection.prefix, handler)
 
 	return collection
 }
