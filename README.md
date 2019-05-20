@@ -194,3 +194,9 @@ Remember, this is an optional feature.  If your client does not include ETags wi
 ### Implementing ETags in your Domain Model
 
 The [data library](https://github.com/benpate/data) includes an optional `Journal` object that implements *most* of the `Object` interface that Presto needs in order to operate.  The `data.Journal` object also includes a simple mechanism for reading and writing ETags into every record you create.  You're welcome to use this implementation, or to create one that suits your needs better.
+
+## Pull Requests Welcome
+
+Original versions of this library have been used in production on commercial applications for years, and greatly reduced the amount of work required to **create** and **maintain** a well-structured REST API.
+
+This new, open-sourced version of PRESTO will greatly benefit from your experience reports, use cases, and contributions.  If you have an idea for making Rosetta better, send in a pull request.  We're all in this together! 🎩
