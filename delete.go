@@ -4,13 +4,12 @@ import (
 	"net/http"
 
 	"github.com/benpate/derp"
-	"github.com/labstack/echo/v4"
 )
 
 // Delete returns an HTTP handler that knows how to delete records from the collection
 func (collection *Collection) Delete(roles ...RoleFunc) *Collection {
 
-	handler := func(ctx echo.Context) error {
+	handler := func(ctx Context) error {
 
 		service := collection.factory()
 		defer service.Close()

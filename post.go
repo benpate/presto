@@ -4,13 +4,12 @@ import (
 	"net/http"
 
 	"github.com/benpate/derp"
-	"github.com/labstack/echo/v4"
 )
 
 // Post returns an HTTP handler that knows how to create new objects in the collection
 func (collection *Collection) Post(roles ...RoleFunc) *Collection {
 
-	handler := func(ctx echo.Context) error {
+	handler := func(ctx Context) error {
 
 		service := collection.factory()
 		defer service.Close()

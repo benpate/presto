@@ -3,7 +3,6 @@ package presto
 import (
 	"github.com/benpate/data"
 	"github.com/benpate/derp"
-	"github.com/labstack/echo/v4"
 )
 
 // Collection provides all of the HTTP hanlers for a specific domain object,
@@ -59,7 +58,7 @@ func (collection *Collection) getCache() Cache {
 }
 
 // getScope executes each scoper function for this context and returns a data expression
-func (collection *Collection) getScope(ctx echo.Context) (data.Expression, *derp.Error) {
+func (collection *Collection) getScope(ctx Context) (data.Expression, *derp.Error) {
 
 	result := data.Expression{}
 
@@ -94,7 +93,7 @@ func (collection *Collection) getScope(ctx echo.Context) (data.Expression, *derp
 // isEtagConflict returns TRUE if the provided ETag DOES NOT match the value in the cache.
 // This is used for (very) optimistic locking.  If this returns a FALSE, then the value
 // must STILL be double checked AFTER we load the object, because its might not be in the cache.
-func (collection *Collection) isETagConflict(ctx echo.Context, object data.Object) bool {
+func (collection *Collection) isETagConflict(ctx Context, object data.Object) bool {
 
 	if object, ok := object.(ETagger); ok {
 
