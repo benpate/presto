@@ -3,6 +3,7 @@ package presto
 import (
 	"github.com/benpate/data"
 	"github.com/benpate/derp"
+	"github.com/labstack/echo/v4"
 )
 
 // Collection provides all of the HTTP hanlers for a specific domain object,
@@ -58,7 +59,7 @@ func (collection *Collection) getCache() Cache {
 }
 
 // getScope executes each scoper function for this context and returns a data expression
-func (collection *Collection) getScope(ctx Context) (data.Expression, *derp.Error) {
+func (collection *Collection) getScope(ctx echo.Context) (data.Expression, *derp.Error) {
 
 	result := data.Expression{}
 

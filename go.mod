@@ -3,10 +3,9 @@ module github.com/benpate/presto
 go 1.12
 
 require (
-	github.com/benpate/data v0.2.1
-	github.com/benpate/derp v0.9.2
-	github.com/benpate/remote v0.5.5
-	github.com/labstack/echo/v4 v4.0.0
-	github.com/stretchr/testify v1.3.0
-	golang.org/x/text v0.3.2 // indirect
+	github.com/benpate/data v0.2.3
+	github.com/benpate/derp v0.9.4
+	github.com/benpate/remote v0.5.6
+	github.com/labstack/echo/v4 v4.1.15
+	github.com/stretchr/testify v1.5.1
 )

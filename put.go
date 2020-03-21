@@ -4,12 +4,13 @@ import (
 	"net/http"
 
 	"github.com/benpate/derp"
+	"github.com/labstack/echo/v4"
 )
 
 // Put returns an HTTP handler that knows how to update in the collection
 func (collection *Collection) Put(roles ...RoleFunc) *Collection {
 
-	handler := func(ctx Context) error {
+	handler := func(ctx echo.Context) error {
 
 		service := collection.factory()
 		defer service.Close()

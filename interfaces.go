@@ -96,7 +96,7 @@ type Context interface {
 	JSON(code int, value interface{}) error
 
 	// Text sends a text response with a status code.
-	Text(code int, text string) error
+	// Text(code int, text string) error
 
 	// HTML sends an HTTP response with status code.
 	HTML(code int, html string) error
