@@ -6,6 +6,12 @@ import "github.com/labstack/echo/v4"
 func (collection *Collection) List(roles ...RoleFunc) *Collection {
 
 	handler := func(context echo.Context) error {
+
+		service := collection.factory()
+		defer service.Close()
+
+		// objects, err := service.ListObjects(filter)
+
 		return nil
 	}
 
