@@ -1,3 +1,9 @@
+package presto
+
+import (
+	"net/http"
+	"net/url"
+)
 
 // Context represents the minimum interface that a presto HTTP handler can depend on.
 // It is essentially a subset of the Context interface, and adapters will be written
