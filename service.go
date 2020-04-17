@@ -1,6 +1,11 @@
 package presto
 
-import "github.com/benpate/data"
+import (
+	"github.com/benpate/data"
+	"github.com/benpate/data/expression"
+	"github.com/benpate/data/option"
+	"github.com/benpate/derp"
+)
 
 // ServiceFunc is a function that can generate new services/sessions.
 // Each session represents a single HTTP request, which can potentially span
@@ -18,19 +23,17 @@ type Service interface {
 	NewObject() data.Object
 
 	// ListObjects returns an iterator the returns all objects
-	ListObjects(criteria data.Expression, options ...data.Option) (data.Iterator, *derp.Error)
+	ListObjects(criteria expression.Expression, options ...option.Option) (data.Iterator, *derp.Error)
 
-	// Load retrieves a single object from the database
-	LoadObject(criteria data.Expression, options ...data.Option) (data.Object, *derp.Error)
+	// LoadObject retrieves a single object from the database
+	LoadObject(criteria expression.Expression) (data.Object, *derp.Error)
 
-	// Save inserts/updates a single object in the database
+	// SaveObject inserts/updates a single object in the database
 	SaveObject(object data.Object, comment string) *derp.Error
 
-	// Delete removes a single object from the database
+	// DeleteObject removes a single object from the database
 	DeleteObject(object data.Object, comment string) *derp.Error
 
 	// Close cleans up any connections opened by the service.
 	Close()
 }
-
-

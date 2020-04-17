@@ -2,6 +2,7 @@ package presto
 
 import (
 	"github.com/benpate/data"
+	"github.com/benpate/data/expression"
 	"github.com/benpate/derp"
 	"github.com/labstack/echo/v4"
 )
@@ -59,9 +60,9 @@ func (collection *Collection) getCache() Cache {
 }
 
 // getScope executes each scoper function for this context and returns a data expression
-func (collection *Collection) getScope(ctx echo.Context) (data.Expression, *derp.Error) {
+func (collection *Collection) getScope(ctx echo.Context) (expression.Expression, *derp.Error) {
 
-	result := data.Expression{}
+	result := expression.And()
 
 	if globalScopes != nil {
 
@@ -73,7 +74,7 @@ func (collection *Collection) getScope(ctx echo.Context) (data.Expression, *derp
 				return result, derp.Wrap(err, "presto.getScope", "Error executing global scope function")
 			}
 
-			result = result.Join(next)
+			result = expression.And(result, next)
 		}
 	}
 
@@ -85,7 +86,7 @@ func (collection *Collection) getScope(ctx echo.Context) (data.Expression, *derp
 			return result, derp.Wrap(err, "presto.getScope", "Error executing scope function")
 		}
 
-		result = result.Join(next)
+		result = expression.And(result, next)
 	}
 
 	return result, nil
