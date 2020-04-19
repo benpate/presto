@@ -33,6 +33,12 @@ func TestPresto(t *testing.T) {
 		Email:    "john@sky.net",
 	}
 
+	sarah := testPerson{
+		PersonID: "sc456",
+		Name:     "Sarah Connor",
+		Email:    "sarah@sky.net",
+	}
+
 	person := testPerson{}
 
 	// Post a record to the "remote" server
@@ -58,12 +64,6 @@ func TestPresto(t *testing.T) {
 
 	//////////////////////////
 	// PUT a record
-
-	sarah := testPerson{
-		PersonID: "sc456",
-		Name:     "Sarah Connor",
-		Email:    "sarah@sky.net",
-	}
 
 	t2 := remote.Put("http://localhost:8080/persons/" + sarah.ID()).
 		JSON(sarah)
@@ -113,6 +113,59 @@ func TestPresto(t *testing.T) {
 	assert.Equal(t, sarah.PersonID, person.PersonID)
 	assert.Equal(t, sarah.Name, person.Name)
 	assert.Equal(t, sarah.Email, person.Email)
+
+	{
+		// UPDATE RECORDS
+
+		sarah := testPerson{
+			PersonID: "sc456",
+			Name:     "Sarah Connor",
+			Email:    "sarahs-new-email@sky.net",
+		}
+
+		txn := remote.Put("http://localhost:8080/persons/" + sarah.ID()).
+			JSON(sarah)
+
+		if err := txn.Send(); err != nil {
+			err.Report()
+			assert.Fail(t, "Error PUT-ing a record", sarah)
+		}
+
+		// Confirm that the record was sent/saved correctly.
+		criteria = expression.New("personId", "=", sarah.PersonID)
+		if err := session.Load("Persons", criteria, &person); err != nil {
+			err.Report()
+			assert.Fail(t, "Error loading new record", err)
+		}
+
+		assert.Equal(t, sarah.PersonID, person.PersonID)
+		assert.Equal(t, sarah.Name, person.Name)
+		assert.Equal(t, sarah.Email, person.Email)
+	}
+
+	{
+		// DELETE RECORDS
+
+		txn1 := remote.Delete("http://localhost:8080/persons/" + john.ID())
+
+		if err1 := txn1.Send(); err1 != nil {
+			err1.Report()
+			assert.Fail(t, "Error DELETE-ing a record", sarah)
+		}
+
+		txn2 := remote.Get("http://localhost:8080/persons/" + john.ID())
+		err2 := txn2.Send()
+
+		assert.NotNil(t, err2)
+		assert.Equal(t, 404, err2.Code)
+
+		txn3 := remote.Delete("http://localhost:8080/persons/" + john.ID())
+		err3 := txn3.Send()
+
+		assert.NotNil(t, err3)
+		assert.Equal(t, 404, err3.Code)
+
+	}
 }
 
 // FACTORY OBJECT
