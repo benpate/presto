@@ -60,7 +60,7 @@ func (collection *Collection) getCache() Cache {
 }
 
 // getScope executes each scoper function for this context and returns a data expression
-func (collection *Collection) getScope(ctx echo.Context) (expression.Expression, *derp.Error) {
+func (collection *Collection) getScope(ctx echo.Context) (expression.AndExpression, *derp.Error) {
 
 	result := expression.And()
 
@@ -90,6 +90,22 @@ func (collection *Collection) getScope(ctx echo.Context) (expression.Expression,
 	}
 
 	return result, nil
+}
+
+func (collection *Collection) getScopeWithToken(ctx echo.Context) (expression.AndExpression, *derp.Error) {
+
+	result, err := collection.getScope(ctx)
+
+	if err != nil {
+		return result, err
+	}
+
+	tokenValue := ctx.Param(collection.token)
+	if tokenValue == "" {
+		return result, derp.New(500, "presto.getScopeWithToken", "Token cannot be empty")
+	}
+
+	return result.And(collection.token, expression.OperatorEqual, tokenValue), nil
 }
 
 // isEtagConflict returns TRUE if the provided ETag DOES NOT match the value in the cache.

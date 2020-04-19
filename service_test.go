@@ -34,6 +34,41 @@ func TestServiceList(t *testing.T) {
 	assert.False(t, it.Next(person))
 }
 
+func TestServiceLoad(t *testing.T) {
+
+	s := getTestPersonService()
+
+	{
+		person, err := s.LoadObject(expression.New("personId", "=", "john"))
+
+		john := person.(*testPerson)
+		assert.Nil(t, err)
+		assert.Equal(t, "john", john.PersonID)
+		assert.Equal(t, "John Connor", john.Name)
+		assert.Equal(t, "john@sky.net", john.Email)
+	}
+
+	{
+		person, err := s.LoadObject(expression.New("personId", "=", "sara"))
+
+		sara := person.(*testPerson)
+		assert.Nil(t, err)
+		assert.Equal(t, "sara", sara.PersonID)
+		assert.Equal(t, "Sara Connor", sara.Name)
+		assert.Equal(t, "sara@sky.net", sara.Email)
+	}
+
+	{
+		person, err := s.LoadObject(expression.New("personId", "=", "kyle"))
+
+		kyle := person.(*testPerson)
+		assert.Nil(t, err)
+		assert.Equal(t, "kyle", kyle.PersonID)
+		assert.Equal(t, "Kyle Reese", kyle.Name)
+		assert.Equal(t, "kyle@resistance.mil", kyle.Email)
+	}
+}
+
 // SERVICE OBJECT
 type testPersonService struct {
 	session data.Session

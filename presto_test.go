@@ -1,9 +1,23 @@
 package presto
 
-/*
+import (
+	"context"
+	"testing"
+
+	"github.com/benpate/data"
+	"github.com/benpate/data/expression"
+	"github.com/benpate/data/mockdb"
+	"github.com/benpate/remote"
+	"github.com/labstack/echo/v4"
+	"github.com/stretchr/testify/assert"
+)
+
 func TestPresto(t *testing.T) {
 
-	go startTestServer()
+	db := mockdb.New()
+	session := db.Session(context.TODO())
+
+	go startTestServer(db)
 
 	// Verify that the server is running.
 	if err := remote.Get("http://localhost:8080/").Send(); err != nil {
@@ -30,9 +44,10 @@ func TestPresto(t *testing.T) {
 		assert.Fail(t, "Error posting to localhost", err)
 	}
 
-	// Confirm that the record was sent correctly.
-	criteria = data.Expression{{"personId", "=", john.PersonID}}
-	if err := db.Load("Persons", criteria, &person); err != nil {
+	// Confirm that the record was sent/saved correctly.
+	criteria := expression.New("personId", "=", john.PersonID)
+
+	if err := session.Load("Persons", criteria, &person); err != nil {
 		err.Report()
 		assert.Fail(t, "Error loading new record from db", err)
 	}
@@ -58,9 +73,9 @@ func TestPresto(t *testing.T) {
 		assert.Fail(t, "Error PUT-ing a record", sarah)
 	}
 
-	// Confirm that the record was sent correctly.
-	criteria = data.Expression{{"personId", "=", sarah.PersonID}}
-	if err := db.Load("Persons", criteria, &person); err != nil {
+	// Confirm that the record was sent/saved correctly.
+	criteria = expression.New("personId", "=", sarah.PersonID)
+	if err := session.Load("Persons", criteria, &person); err != nil {
 		err.Report()
 		assert.Fail(t, "Error loading new record", err)
 	}
@@ -86,6 +101,7 @@ func TestPresto(t *testing.T) {
 	assert.Equal(t, john.Email, person.Email)
 
 	// Load Sarah
+
 	t4 := remote.Get("http://localhost:8080/persons/"+sarah.PersonID).
 		Response(&person, nil)
 
@@ -101,7 +117,7 @@ func TestPresto(t *testing.T) {
 
 // FACTORY OBJECT
 
-func testFactory(db *testDB) ServiceFunc {
+func testFactory(db data.Datastore) ServiceFunc {
 
 	return func() Service {
 		ctx := context.TODO()
@@ -112,12 +128,11 @@ func testFactory(db *testDB) ServiceFunc {
 	}
 }
 
-func startTestServer() {
+func startTestServer(db data.Datastore) {
 
 	UseScopes()
 
-	db := mockdb.New()
-	factory := testFactory(&db)
+	factory := testFactory(db)
 
 	e := echo.New()
 
@@ -129,6 +144,7 @@ func startTestServer() {
 
 	NewCollection(factory, "/persons").
 		UseToken("personId").
+		UseScopes().
 		Post().
 		Get().
 		Put().
@@ -137,5 +153,3 @@ func startTestServer() {
 
 	e.Start(":8080")
 }
-
-*/

@@ -16,7 +16,7 @@ func (collection *Collection) Patch(roles ...RoleFunc) *Collection {
 		defer service.Close()
 
 		// Use scoper functions to create query criteria for this object
-		filter, err := collection.getScope(ctx)
+		filter, err := collection.getScopeWithToken(ctx)
 
 		if err != nil {
 			err = derp.Wrap(err, "presto.Patch", "Error determining scope", ctx).Report()

@@ -16,7 +16,7 @@ func (collection *Collection) Get(roles ...RoleFunc) *Collection {
 		defer service.Close()
 
 		// Use scoper functions to create query filter for this object
-		filter, err := collection.getScope(ctx)
+		filter, err := collection.getScopeWithToken(ctx)
 
 		if err != nil {
 			err = derp.Wrap(err, "presto.Get", "Error determining scope", ctx).Report()

@@ -16,7 +16,7 @@ func (collection *Collection) Delete(roles ...RoleFunc) *Collection {
 		defer service.Close()
 
 		// Use scoper functions to create query criteria for this object
-		criteria, err := collection.getScope(ctx)
+		criteria, err := collection.getScopeWithToken(ctx)
 
 		if err != nil {
 			err = derp.Wrap(err, "presto.Delete", "Error determining scope", ctx).Report()
