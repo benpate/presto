@@ -116,7 +116,7 @@ func startTestServer() {
 
 	UseScopes()
 
-	db := mock.New()
+	db := mockdb.New()
 	factory := testFactory(&db)
 
 	e := echo.New()

@@ -6,9 +6,10 @@ import (
 
 	"github.com/benpate/data"
 	"github.com/benpate/data/expression"
-	"github.com/benpate/data/mock"
+	"github.com/benpate/data/mockdb"
 	"github.com/benpate/data/option"
 	"github.com/benpate/derp"
+	"github.com/stretchr/testify/assert"
 )
 
 // TEST METHODS
@@ -21,11 +22,16 @@ func TestServiceList(t *testing.T) {
 
 	person := s.New()
 
-	for it.Next(person) {
-		t.Log(person)
-	}
+	it.Next(person)
+	assert.Equal(t, "John Connor", person.Name)
 
-	t.Fail()
+	it.Next(person)
+	assert.Equal(t, "Kyle Reese", person.Name)
+
+	it.Next(person)
+	assert.Equal(t, "Sara Connor", person.Name)
+
+	assert.False(t, it.Next(person))
 }
 
 // SERVICE OBJECT
@@ -80,7 +86,7 @@ func (service *testPersonService) Close() {}
 // Prepopulate Database
 func getTestPersonService() *testPersonService {
 
-	session := mock.New().Session(context.TODO())
+	session := mockdb.New().Session(context.TODO())
 
 	service := testPersonService{session: session}
 
