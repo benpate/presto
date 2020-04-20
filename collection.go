@@ -10,20 +10,20 @@ import (
 // Collection provides all of the HTTP hanlers for a specific domain object,
 // or collection of records
 type Collection struct {
-	factory ServiceFunc
-	prefix  string
-	scopes  []ScopeFunc
-	cache   Cache
-	token   string
+	serviceFunc ServiceFunc
+	prefix      string
+	scopes      []ScopeFunc
+	cache       Cache
+	token       string
 }
 
 // NewCollection returns a fully populated Collection object
-func NewCollection(factory ServiceFunc, prefix string) *Collection {
+func NewCollection(serviceFunc ServiceFunc, prefix string) *Collection {
 	return &Collection{
-		factory: factory,
-		prefix:  prefix,
-		scopes:  []ScopeFunc{},
-		token:   "id",
+		serviceFunc: serviceFunc,
+		prefix:      prefix,
+		scopes:      []ScopeFunc{},
+		token:       "id",
 	}
 }
 

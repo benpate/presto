@@ -12,7 +12,7 @@ func (collection *Collection) Patch(roles ...RoleFunc) *Collection {
 
 	handler := func(ctx echo.Context) error {
 
-		service := collection.factory(ctx.Request().Context())
+		service := collection.serviceFunc(ctx.Request().Context())
 		defer service.Close()
 
 		// Use scoper functions to create query criteria for this object
