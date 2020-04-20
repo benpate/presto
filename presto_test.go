@@ -15,9 +15,10 @@ import (
 func TestPresto(t *testing.T) {
 
 	db := mockdb.New()
-	session := db.Session(context.TODO())
 
 	go startTestServer(db)
+
+	session := db.Session(context.TODO())
 
 	// Verify that the server is running.
 	if err := remote.Get("http://localhost:8080/").Send(); err != nil {
@@ -172,8 +173,7 @@ func TestPresto(t *testing.T) {
 
 func testFactory(db data.Datastore) ServiceFunc {
 
-	return func() Service {
-		ctx := context.TODO()
+	return func(ctx context.Context) Service {
 
 		return &testPersonService{
 			session: db.Session(ctx),

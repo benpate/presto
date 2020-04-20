@@ -1,6 +1,8 @@
 package presto
 
 import (
+	"context"
+
 	"github.com/benpate/data"
 	"github.com/benpate/data/expression"
 	"github.com/benpate/data/option"
@@ -11,7 +13,7 @@ import (
 // Each session represents a single HTTP request, which can potentially span
 // multiple database calls.  This gives the factory an opportunity to
 // initialize a new database session for each HTTP request.
-type ServiceFunc func() Service
+type ServiceFunc func(context.Context) Service
 
 // Service defines all of the functions that a service must provide to work with Presto.
 // It relies on the generic Object interface to load and save objects of any type.

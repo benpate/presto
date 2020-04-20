@@ -12,7 +12,7 @@ func (collection *Collection) Post(roles ...RoleFunc) *Collection {
 
 	handler := func(ctx echo.Context) error {
 
-		service := collection.factory()
+		service := collection.factory(ctx.Request().Context())
 		defer service.Close()
 
 		// Create a new, empty object

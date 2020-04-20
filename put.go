@@ -12,7 +12,7 @@ func (collection *Collection) Put(roles ...RoleFunc) *Collection {
 
 	handler := func(ctx echo.Context) error {
 
-		service := collection.factory()
+		service := collection.factory(ctx.Request().Context())
 		defer service.Close()
 
 		// We'll use this to determine if we're (T) creating a new object, or (F) updating an existing one.

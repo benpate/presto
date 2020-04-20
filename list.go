@@ -14,7 +14,7 @@ func (collection *Collection) List(roles ...RoleFunc) *Collection {
 
 	handler := func(ctx echo.Context) error {
 
-		service := collection.factory()
+		service := collection.factory(ctx.Request().Context())
 		defer service.Close()
 
 		// Use scoper functions to create query filter for this object
