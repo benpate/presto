@@ -22,7 +22,7 @@ func NewCollection(factory ServiceFunc, prefix string) *Collection {
 	return &Collection{
 		factory: factory,
 		prefix:  prefix,
-		scopes:  []ScopeFunc{DefaultScope},
+		scopes:  []ScopeFunc{},
 		token:   "id",
 	}
 }
