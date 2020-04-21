@@ -12,7 +12,7 @@ import (
 type Collection struct {
 	serviceFunc ServiceFunc
 	prefix      string
-	scopes      []ScopeFunc
+	scopes      ScopeFuncSlice
 	cache       Cache
 	token       string
 }
@@ -22,14 +22,14 @@ func NewCollection(serviceFunc ServiceFunc, prefix string) *Collection {
 	return &Collection{
 		serviceFunc: serviceFunc,
 		prefix:      prefix,
-		scopes:      []ScopeFunc{},
+		scopes:      ScopeFuncSlice{},
 		token:       "id",
 	}
 }
 
 // UseScopes replaces the default scope with a new list of ScopeFuncs
 func (collection *Collection) UseScopes(scopes ...ScopeFunc) *Collection {
-	collection.scopes = scopes
+	collection.scopes = ScopeFuncSlice(scopes)
 
 	return collection
 }
@@ -60,41 +60,16 @@ func (collection *Collection) getCache() Cache {
 }
 
 // getScope executes each scoper function for this context and returns a data expression
-func (collection *Collection) getScope(ctx echo.Context) (expression.AndExpression, *derp.Error) {
+func (collection *Collection) getScopes() ScopeFuncSlice {
 
-	result := expression.And()
-
-	if globalScopes != nil {
-
-		for _, scope := range globalScopes {
-
-			next, err := scope(ctx)
-
-			if err != nil {
-				return result, derp.Wrap(err, "presto.getScope", "Error executing global scope function")
-			}
-
-			result = expression.And(result, next)
-		}
-	}
-
-	for _, scope := range collection.scopes {
-
-		next, err := scope(ctx)
-
-		if err != nil {
-			return result, derp.Wrap(err, "presto.getScope", "Error executing scope function")
-		}
-
-		result = expression.And(result, next)
-	}
-
-	return result, nil
+	return append(globalScopes, collection.scopes...)
 }
 
 func (collection *Collection) getScopeWithToken(ctx echo.Context) (expression.AndExpression, *derp.Error) {
 
-	result, err := collection.getScope(ctx)
+	scopes := collection.getScopes()
+
+	result, err := scopes.Evaluate(ctx)
 
 	if err != nil {
 		return result, err

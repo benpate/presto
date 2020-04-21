@@ -8,7 +8,11 @@ import "github.com/labstack/echo/v4"
 
 var globalRouter *echo.Echo
 var globalCache Cache
-var globalScopes []ScopeFunc
+var globalScopes ScopeFuncSlice
+
+func init() {
+	globalScopes = ScopeFuncSlice{}
+}
 
 // UseRouter sets the echo router that presto will use to register HTTP handlers.
 func UseRouter(router *echo.Echo) {
@@ -22,5 +26,5 @@ func UseCache(cache Cache) {
 
 // UseScopes sets global settings for all collections that are managed by presto
 func UseScopes(scopes ...ScopeFunc) {
-	globalScopes = scopes
+	globalScopes = ScopeFuncSlice(scopes)
 }

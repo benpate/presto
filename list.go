@@ -17,8 +17,10 @@ func (collection *Collection) List(roles ...RoleFunc) *Collection {
 		service := collection.serviceFunc(ctx.Request().Context())
 		defer service.Close()
 
+		scopes := collection.getScopes()
+
 		// Use scoper functions to create query filter for this object
-		filter, err := collection.getScope(ctx)
+		filter, err := scopes.Evaluate(ctx)
 
 		if err != nil {
 			err = derp.Wrap(err, "presto.List", "Error determining scope", ctx).Report()
@@ -48,13 +50,9 @@ func (collection *Collection) List(roles ...RoleFunc) *Collection {
 		// Loop through the iterator to return a data structure.
 		for it.Next(object) {
 
-			// Check all roles to make sure that we're allowed to view this object
-			for _, role := range roles {
-
-				// If any role fails, then we won't include this object in the results returned to the user.
-				if role(ctx, object) == false {
-					continue
-				}
+			// If the user does not have the required roles, then do not include this object in the results.
+			if RoleFuncSlice(roles).Evaluate(ctx, object) == false {
+				continue
 			}
 
 			// Try to marshal the object into JSON.
@@ -77,13 +75,6 @@ func (collection *Collection) List(roles ...RoleFunc) *Collection {
 		}
 
 		buffer.WriteByte(']')
-
-		// Check roles to make sure that we're allowed to view this object
-		for _, role := range roles {
-			if role(ctx, object) == false {
-				return ctx.NoContent(http.StatusUnauthorized)
-			}
-		}
 
 		return ctx.JSON(http.StatusOK, object)
 	}
