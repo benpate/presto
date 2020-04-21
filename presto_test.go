@@ -8,6 +8,7 @@ import (
 	"github.com/benpate/data/expression"
 	"github.com/benpate/data/mockdb"
 	"github.com/benpate/remote"
+	"github.com/davecgh/go-spew/spew"
 	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/assert"
 )
@@ -111,6 +112,8 @@ func TestPresto(t *testing.T) {
 		assert.Fail(t, "Error retrieving person from REST service")
 	}
 
+	spew.Dump(sarah)
+	spew.Dump(person)
 	assert.Equal(t, sarah.PersonID, person.PersonID)
 	assert.Equal(t, sarah.Name, person.Name)
 	assert.Equal(t, sarah.Email, person.Email)

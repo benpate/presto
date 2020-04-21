@@ -4,7 +4,6 @@ import (
 	"github.com/benpate/data"
 	"github.com/benpate/data/expression"
 	"github.com/benpate/derp"
-	"github.com/labstack/echo/v4"
 )
 
 // Collection provides all of the HTTP hanlers for a specific domain object,
@@ -65,22 +64,21 @@ func (collection *Collection) getScopes() ScopeFuncSlice {
 	return append(globalScopes, collection.scopes...)
 }
 
-func (collection *Collection) getScopeWithToken(ctx echo.Context) (expression.AndExpression, *derp.Error) {
+// getScopeWithToken returns all of the scopes that are valid for this collection, and adds a ScopeFunc for the collection.token
+func (collection *Collection) getScopesWithToken() (ScopeFuncSlice, *derp.Error) {
 
 	scopes := collection.getScopes()
 
-	result, err := scopes.Evaluate(ctx)
+	tokenScopeFunc := func(context Context) (expression.Expression, *derp.Error) {
 
-	if err != nil {
-		return result, err
+		if value := context.Param(collection.token); value != "" {
+			return expression.New(collection.token, expression.OperatorEqual, value), nil
+		}
+
+		return nil, derp.New(derp.CodeBadRequestError, "collection.getScopeWithToken", "Token cannot be empty", collection.token)
 	}
 
-	tokenValue := ctx.Param(collection.token)
-	if tokenValue == "" {
-		return result, derp.New(500, "presto.getScopeWithToken", "Token cannot be empty")
-	}
-
-	return result.And(collection.token, expression.OperatorEqual, tokenValue), nil
+	return append(scopes, tokenScopeFunc), nil
 }
 
 // isEtagConflict returns TRUE if the provided ETag DOES NOT match the value in the cache.

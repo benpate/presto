@@ -16,15 +16,22 @@ func (collection *Collection) Patch(roles ...RoleFunc) *Collection {
 		defer service.Close()
 
 		// Use scoper functions to create query criteria for this object
-		filter, err := collection.getScopeWithToken(ctx)
+		scopes, err := collection.getScopesWithToken()
 
 		if err != nil {
-			err = derp.Wrap(err, "presto.Patch", "Error determining scope", ctx).Report()
+			err = derp.Wrap(err, "presto.Patch", "Error determining scopes", ctx).Report()
+			return ctx.NoContent(err.Code)
+		}
+
+		criteria, err := scopes.Evaluate(ctx)
+
+		if err != nil {
+			err = derp.Wrap(err, "presto.Patch", "Error resolving scopes", ctx).Report()
 			return ctx.NoContent(err.Code)
 		}
 
 		// Try to load the record from the database
-		object, err := service.LoadObject(filter)
+		object, err := service.LoadObject(criteria)
 
 		if err != nil {
 			err = derp.Wrap(err, "presto.Patch", "Error loading object", RequestInfo(ctx)).Report()
