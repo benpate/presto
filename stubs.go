@@ -5,13 +5,12 @@ import (
 
 	"github.com/benpate/data"
 	"github.com/benpate/derp"
-	"github.com/labstack/echo/v4"
 )
 
 // Get does *most* of the work of handling an http.GET request.  It checks scopes and roles, then loads an object and
 // returns it along with a valid HTTP status code.  You can use this as a shortcut in your own HTTP handler functions,
 // and can wrap additional logic before and after this work.
-func Get(ctx echo.Context, service Service, cache Cache, scopes ScopeFuncSlice, roles RoleFuncSlice) (int, data.Object) {
+func Get(ctx Context, service Service, cache Cache, scopes ScopeFuncSlice, roles RoleFuncSlice) (int, data.Object) {
 
 	// If the object has an ETag, and it matches the value in the cache,
 	// then we don't need to proceed any further.
