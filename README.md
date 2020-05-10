@@ -1,6 +1,6 @@
 # Presto 🎩
 
-[![GoDoc](http://img.shields.io/badge/go-documentation-blue.svg?style=flat-square)](http://godoc.org/github.com/benpate/presto)
+[![GoDoc](http://img.shields.io/badge/go-documentation-blue.svg?style=flat-square)](http://pkg.go.dev/github.com/benpate/presto)
 [![Go Report Card](https://goreportcard.com/badge/github.com/benpate/presto?style=flat-square)](https://goreportcard.com/report/github.com/benpate/presto)
 [![Build Status](http://img.shields.io/travis/benpate/presto.svg?style=flat-square)](https://travis-ci.org/benpate/presto)
 [![Codecov](https://img.shields.io/codecov/c/github/benpate/presto.svg?style=flat-square)](https://codecov.io/gh/benpate/presto)
