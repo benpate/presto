@@ -174,7 +174,7 @@ func TestPresto(t *testing.T) {
 
 // FACTORY OBJECT
 
-func testFactory(db data.Datastore) ServiceFunc {
+func testFactory(db data.Server) ServiceFunc {
 
 	return func(ctx context.Context) Service {
 
@@ -184,7 +184,7 @@ func testFactory(db data.Datastore) ServiceFunc {
 	}
 }
 
-func startTestServer(db data.Datastore) {
+func startTestServer(db data.Server) {
 
 	UseScopes()
 
