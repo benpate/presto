@@ -19,14 +19,16 @@ func (collection *Collection) Patch(roles ...RoleFunc) *Collection {
 		scopes, err := collection.getScopesWithToken()
 
 		if err != nil {
-			err = derp.Wrap(err, "presto.Patch", "Error determining scopes", ctx).Report()
+			err = derp.Wrap(err, "presto.Patch", "Error determining scopes", ctx)
+			derp.Report(err)
 			return ctx.NoContent(err.Code)
 		}
 
 		criteria, err := scopes.Evaluate(ctx)
 
 		if err != nil {
-			err = derp.Wrap(err, "presto.Patch", "Error resolving scopes", ctx).Report()
+			err = derp.Wrap(err, "presto.Patch", "Error resolving scopes", ctx)
+			derp.Report(err)
 			return ctx.NoContent(err.Code)
 		}
 
@@ -34,7 +36,8 @@ func (collection *Collection) Patch(roles ...RoleFunc) *Collection {
 		object, err := service.LoadObject(criteria)
 
 		if err != nil {
-			err = derp.Wrap(err, "presto.Patch", "Error loading object", RequestInfo(ctx)).Report()
+			err = derp.Wrap(err, "presto.Patch", "Error loading object", RequestInfo(ctx))
+			derp.Report(err)
 			return ctx.NoContent(err.Code)
 		}
 
@@ -52,7 +55,8 @@ func (collection *Collection) Patch(roles ...RoleFunc) *Collection {
 
 		// Update the object with new information
 		if er := ctx.Bind(object); er != nil {
-			err := derp.New(derp.CodeBadRequestError, "presto.Patch", "Error binding object", er, object, RequestInfo(ctx)).Report()
+			err := derp.New(derp.CodeBadRequestError, "presto.Patch", "Error binding object", er, object, RequestInfo(ctx))
+			derp.Report(err)
 			return ctx.NoContent(err.Code)
 		}
 
@@ -65,7 +69,8 @@ func (collection *Collection) Patch(roles ...RoleFunc) *Collection {
 
 		// Try to update the record in the database
 		if err := service.SaveObject(object, ctx.Request().Header.Get("X-Comment")); err != nil {
-			err = derp.Wrap(err, "presto.Patch", "Error saving object", object, RequestInfo(ctx)).Report()
+			err = derp.Wrap(err, "presto.Patch", "Error saving object", object, RequestInfo(ctx))
+			derp.Report(err)
 			return ctx.NoContent(err.Code)
 		}
 
@@ -73,7 +78,8 @@ func (collection *Collection) Patch(roles ...RoleFunc) *Collection {
 		if object, ok := object.(ETagger); ok {
 			if cache := collection.getCache(); cache != nil {
 				if err := cache.Set(ctx.Path(), object.ETag()); err != nil {
-					err = derp.Wrap(err, "presto.Patch", "Error updating ETag cache", object).Report()
+					err = derp.Wrap(err, "presto.Patch", "Error updating ETag cache", object)
+					derp.Report(err)
 					return ctx.NoContent(err.Code)
 				}
 			}

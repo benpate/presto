@@ -16,7 +16,8 @@ func (collection *Collection) Get(roles ...RoleFunc) *Collection {
 		scopes, err := collection.getScopesWithToken()
 
 		if err != nil {
-			derp.Wrap(err, "collection.Get", "Error defining scopes").Report()
+			err = derp.Wrap(err, "collection.Get", "Error defining scopes")
+			derp.Report(err)
 			return ctx.String(err.Code, "")
 		}
 

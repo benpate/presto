@@ -19,14 +19,16 @@ func (collection *Collection) Delete(roles ...RoleFunc) *Collection {
 		scopes, err := collection.getScopesWithToken()
 
 		if err != nil {
-			err = derp.Wrap(err, "presto.Delete", "Error determining scope", ctx).Report()
+			err = derp.Wrap(err, "presto.Delete", "Error determining scope", ctx)
+			derp.Report(err)
 			return ctx.NoContent(err.Code)
 		}
 
 		criteria, err := scopes.Evaluate(ctx)
 
 		if err != nil {
-			err = derp.Wrap(err, "presto.Delete", "Error evaluating scopes", ctx).Report()
+			err = derp.Wrap(err, "presto.Delete", "Error evaluating scopes", ctx)
+			derp.Report(err)
 			return ctx.NoContent(err.Code)
 		}
 
@@ -34,7 +36,8 @@ func (collection *Collection) Delete(roles ...RoleFunc) *Collection {
 		object, err := service.LoadObject(criteria)
 
 		if err != nil {
-			err = derp.Wrap(err, "presto.Delete", "Error loading object", RequestInfo(ctx)).Report()
+			err = derp.Wrap(err, "presto.Delete", "Error loading object", RequestInfo(ctx))
+			derp.Report(err)
 			return ctx.NoContent(err.Code)
 		}
 
@@ -52,7 +55,8 @@ func (collection *Collection) Delete(roles ...RoleFunc) *Collection {
 
 		// Try to update the record in the database
 		if err := service.DeleteObject(object, ctx.Request().Header.Get("X-Comment")); err != nil {
-			err = derp.Wrap(err, "presto.Delete", "Error deleting object", object, RequestInfo(ctx)).Report()
+			err = derp.Wrap(err, "presto.Delete", "Error deleting object", object, RequestInfo(ctx))
+			derp.Report(err)
 			return ctx.NoContent(err.Code)
 		}
 

@@ -22,14 +22,16 @@ func (collection *Collection) Put(roles ...RoleFunc) *Collection {
 		scopes, err := collection.getScopesWithToken()
 
 		if err != nil {
-			err = derp.Wrap(err, "presto.Patch", "Error determining scopes", ctx).Report()
+			err = derp.Wrap(err, "presto.Patch", "Error determining scopes", ctx)
+			derp.Report(err)
 			return ctx.NoContent(err.Code)
 		}
 
 		criteria, err := scopes.Evaluate(ctx)
 
 		if err != nil {
-			err = derp.Wrap(err, "presto.Patch", "Error determining scope", ctx).Report()
+			err = derp.Wrap(err, "presto.Patch", "Error determining scope", ctx)
+			derp.Report(err)
 			return ctx.NoContent(err.Code)
 		}
 
@@ -41,7 +43,8 @@ func (collection *Collection) Put(roles ...RoleFunc) *Collection {
 			// If the error is ANYTHING BUT a "Not Found" error, then it's a legitimate error,
 			// and we need to shut this whole thing down right now.
 			if err.NotFound() == false {
-				err = derp.Wrap(err, "presto.Put", "Error loading object", RequestInfo(ctx)).Report()
+				err = derp.Wrap(err, "presto.Put", "Error loading object", RequestInfo(ctx))
+				derp.Report(err)
 				return ctx.NoContent(err.Code)
 			}
 
@@ -73,7 +76,8 @@ func (collection *Collection) Put(roles ...RoleFunc) *Collection {
 
 		// Update the object with new information
 		if er := ctx.Bind(object); er != nil {
-			err := derp.New(derp.CodeBadRequestError, "presto.Put", "Error binding object", er, object, RequestInfo(ctx)).Report()
+			err := derp.New(derp.CodeBadRequestError, "presto.Put", "Error binding object", er, object, RequestInfo(ctx))
+			derp.Report(err)
 			return ctx.NoContent(err.Code)
 		}
 
@@ -86,7 +90,8 @@ func (collection *Collection) Put(roles ...RoleFunc) *Collection {
 
 		// Try to update the record in the database
 		if err := service.SaveObject(object, ctx.Request().Header.Get("X-Comment")); err != nil {
-			err = derp.Wrap(err, "presto.Put", "Error saving object", object, RequestInfo(ctx)).Report()
+			err = derp.Wrap(err, "presto.Put", "Error saving object", object, RequestInfo(ctx))
+			derp.Report(err)
 			return ctx.NoContent(err.Code)
 		}
 
@@ -94,7 +99,8 @@ func (collection *Collection) Put(roles ...RoleFunc) *Collection {
 		if object, ok := object.(ETagger); ok {
 			if cache := collection.getCache(); cache != nil {
 				if err := cache.Set(ctx.Path(), object.ETag()); err != nil {
-					err = derp.Wrap(err, "presto.Put", "Error updating cache", object).Report()
+					err = derp.Wrap(err, "presto.Put", "Error updating cache", object)
+					derp.Report(err)
 					return ctx.NoContent(err.Code)
 				}
 			}

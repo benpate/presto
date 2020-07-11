@@ -7,6 +7,7 @@ import (
 	"github.com/benpate/data"
 	"github.com/benpate/data/expression"
 	"github.com/benpate/data/mockdb"
+	"github.com/benpate/derp"
 	"github.com/benpate/remote"
 	"github.com/davecgh/go-spew/spew"
 	"github.com/labstack/echo/v4"
@@ -23,7 +24,7 @@ func TestPresto(t *testing.T) {
 
 	// Verify that the server is running.
 	if err := remote.Get("http://localhost:8080/").Send(); err != nil {
-		err.Report()
+		derp.Report(err)
 		assert.Fail(t, "Error getting default route", err)
 	}
 
@@ -48,7 +49,7 @@ func TestPresto(t *testing.T) {
 		JSON(john)
 
 	if err := t1.Send(); err != nil {
-		err.Report()
+		derp.Report(err)
 		assert.Fail(t, "Error posting to localhost", err)
 	}
 
@@ -56,7 +57,7 @@ func TestPresto(t *testing.T) {
 	criteria := expression.New("personId", "=", john.PersonID)
 
 	if err := session.Load("Persons", criteria, &person); err != nil {
-		err.Report()
+		derp.Report(err)
 		assert.Fail(t, "Error loading new record from db", err)
 	}
 
@@ -71,14 +72,14 @@ func TestPresto(t *testing.T) {
 		JSON(sarah)
 
 	if err := t2.Send(); err != nil {
-		err.Report()
+		derp.Report(err)
 		assert.Fail(t, "Error PUT-ing a record", sarah)
 	}
 
 	// Confirm that the record was sent/saved correctly.
 	criteria = expression.New("personId", "=", sarah.PersonID)
 	if err := session.Load("Persons", criteria, &person); err != nil {
-		err.Report()
+		derp.Report(err)
 		assert.Fail(t, "Error loading new record", err)
 	}
 
@@ -94,7 +95,7 @@ func TestPresto(t *testing.T) {
 		Response(&person, nil)
 
 	if err := t3.Send(); err != nil {
-		err.Report()
+		derp.Report(err)
 		assert.Fail(t, "Error retrieving person from REST service")
 	}
 
@@ -108,7 +109,7 @@ func TestPresto(t *testing.T) {
 		Response(&person, nil)
 
 	if err := t4.Send(); err != nil {
-		err.Report()
+		derp.Report(err)
 		assert.Fail(t, "Error retrieving person from REST service")
 	}
 
@@ -131,14 +132,14 @@ func TestPresto(t *testing.T) {
 			JSON(sarah)
 
 		if err := txn.Send(); err != nil {
-			err.Report()
+			derp.Report(err)
 			assert.Fail(t, "Error PUT-ing a record", sarah)
 		}
 
 		// Confirm that the record was sent/saved correctly.
 		criteria = expression.New("personId", "=", sarah.PersonID)
 		if err := session.Load("Persons", criteria, &person); err != nil {
-			err.Report()
+			derp.Report(err)
 			assert.Fail(t, "Error loading new record", err)
 		}
 
@@ -153,7 +154,7 @@ func TestPresto(t *testing.T) {
 		txn1 := remote.Delete("http://localhost:8080/persons/" + john.ID())
 
 		if err1 := txn1.Send(); err1 != nil {
-			err1.Report()
+			derp.Report(err1)
 			assert.Fail(t, "Error DELETE-ing a record", sarah)
 		}
 

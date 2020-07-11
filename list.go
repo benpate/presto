@@ -23,7 +23,8 @@ func (collection *Collection) List(roles ...RoleFunc) *Collection {
 		filter, err := scopes.Evaluate(ctx)
 
 		if err != nil {
-			err = derp.Wrap(err, "presto.List", "Error determining scope", ctx).Report()
+			err = derp.Wrap(err, "presto.List", "Error determining scope", ctx)
+			derp.Report(err)
 			return ctx.NoContent(err.Code)
 		}
 
@@ -33,11 +34,13 @@ func (collection *Collection) List(roles ...RoleFunc) *Collection {
 		it, err := service.ListObjects(filter)
 
 		if err != nil {
-			err = derp.Wrap(err, "presto.List", "Error loading object", filter).Report()
+			err = derp.Wrap(err, "presto.List", "Error loading object", filter)
+			derp.Report(err)
 			return ctx.NoContent(err.Code)
 		}
 
 		// TODO: add HTTP headers here...
+		// TODO: use strings.Builder here?
 
 		// Get a new object we can populate data into
 		object := service.NewObject()

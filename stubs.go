@@ -32,7 +32,8 @@ func Get(ctx Context, service Service, cache Cache, scopes ScopeFuncSlice, roles
 	filter, err := scopes.Evaluate(ctx)
 
 	if err != nil {
-		derp.Wrap(err, "presto.Get", "Error determining scope", ctx).Report()
+		err = derp.Wrap(err, "presto.Get", "Error determining scope", ctx)
+		derp.Report(err)
 		return err.Code, nil
 	}
 
@@ -40,7 +41,8 @@ func Get(ctx Context, service Service, cache Cache, scopes ScopeFuncSlice, roles
 	object, err := service.LoadObject(filter)
 
 	if err != nil {
-		derp.Wrap(err, "presto.Get", "Error loading object", filter).Report()
+		err = derp.Wrap(err, "presto.Get", "Error loading object", filter)
+		derp.Report(err)
 		return err.Code, nil
 	}
 
@@ -48,7 +50,8 @@ func Get(ctx Context, service Service, cache Cache, scopes ScopeFuncSlice, roles
 	if cache != nil {
 		if object, ok := object.(ETagger); ok {
 			if err := cache.Set(ctx.Path(), object.ETag()); err != nil {
-				derp.Wrap(err, "presto.Get", "Error setting cache value", object).Report()
+				err = derp.Wrap(err, "presto.Get", "Error setting cache value", object)
+				derp.Report(err)
 				return err.Code, nil
 			}
 		}

@@ -20,7 +20,8 @@ func (collection *Collection) Post(roles ...RoleFunc) *Collection {
 
 		// Update the object with new information
 		if er := ctx.Bind(object); er != nil {
-			err := derp.New(derp.CodeBadRequestError, "presto.Post", "Error binding object", er.Error(), object, RequestInfo(ctx)).Report()
+			err := derp.New(derp.CodeBadRequestError, "presto.Post", "Error binding object", er.Error(), object, RequestInfo(ctx))
+			derp.Report(err)
 			return ctx.NoContent(err.Code)
 		}
 
@@ -33,7 +34,8 @@ func (collection *Collection) Post(roles ...RoleFunc) *Collection {
 
 		// Try to update the record in the database
 		if err := service.SaveObject(object, ctx.Request().Header.Get("X-Comment")); err != nil {
-			err = derp.Wrap(err, "presto.Post", "Error saving object", object, RequestInfo(ctx)).Report()
+			err = derp.Wrap(err, "presto.Post", "Error saving object", object, RequestInfo(ctx))
+			derp.Report(err)
 			return ctx.NoContent(err.Code)
 		}
 
