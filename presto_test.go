@@ -20,9 +20,7 @@ func TestPresto(t *testing.T) {
 
 	go startTestServer(db)
 
-	session, err := db.Session(context.TODO())
-
-	assert.Nil(t, err)
+	session := db.Session(context.TODO())
 
 	// Verify that the server is running.
 	if err := remote.Get("http://localhost:8080/").Send(); err != nil {
@@ -181,10 +179,8 @@ func testFactory(db data.Server) ServiceFunc {
 
 	return func(ctx context.Context) Service {
 
-		s, _ := db.Session(ctx)
-
 		return &testPersonService{
-			session: s,
+			session: db.Session(ctx),
 		}
 	}
 }

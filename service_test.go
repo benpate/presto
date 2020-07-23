@@ -121,8 +121,7 @@ func (service *testPersonService) Close() {}
 // Prepopulate Database
 func getTestPersonService() *testPersonService {
 
-	session, _ := mockdb.New().Session(context.TODO())
-
+	session := mockdb.New().Session(context.TODO())
 	service := testPersonService{session: session}
 
 	{
