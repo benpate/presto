@@ -86,7 +86,7 @@ func (service *testPersonService) LoadObject(criteria expression.Expression) (da
 
 	person := service.NewObject()
 
-	if err := service.session.Load("Persons", criteria, person); err != nil {
+	if err := service.session.Collection("Perons").Load(criteria, person); err != nil {
 		return nil, derp.Wrap(err, "testPersonService.Load", "Error Loading Person")
 	}
 
@@ -95,7 +95,7 @@ func (service *testPersonService) LoadObject(criteria expression.Expression) (da
 
 func (service *testPersonService) SaveObject(person data.Object, note string) *derp.Error {
 
-	if err := service.session.Save("Persons", person, note); err != nil {
+	if err := service.session.Collection("Perons").Save(person, note); err != nil {
 		return derp.Wrap(err, "testPersonService.Save", "Error Saving Person", person)
 	}
 
@@ -104,7 +104,7 @@ func (service *testPersonService) SaveObject(person data.Object, note string) *d
 
 func (service *testPersonService) DeleteObject(person data.Object, note string) *derp.Error {
 
-	if err := service.session.Delete("Persons", person, note); err != nil {
+	if err := service.session.Collection("Perons").Delete(person, note); err != nil {
 		return derp.Wrap(err, "testPersonService.Delete", "Error Deleting Person", person)
 	}
 
@@ -113,7 +113,7 @@ func (service *testPersonService) DeleteObject(person data.Object, note string) 
 
 func (service *testPersonService) ListObjects(criteria expression.Expression, options ...option.Option) (data.Iterator, *derp.Error) {
 
-	return service.session.List("Persons", criteria, options...)
+	return service.session.Collection("Perons").List(criteria, options...)
 }
 
 func (service *testPersonService) Close() {}
@@ -121,7 +121,7 @@ func (service *testPersonService) Close() {}
 // Prepopulate Database
 func getTestPersonService() *testPersonService {
 
-	session := mockdb.New().Session(context.TODO())
+	session, _ := mockdb.New().Session(context.TODO())
 
 	service := testPersonService{session: session}
 

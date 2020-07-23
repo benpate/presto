@@ -20,7 +20,9 @@ func TestPresto(t *testing.T) {
 
 	go startTestServer(db)
 
-	session := db.Session(context.TODO())
+	session, err := db.Session(context.TODO())
+
+	assert.Nil(t, err)
 
 	// Verify that the server is running.
 	if err := remote.Get("http://localhost:8080/").Send(); err != nil {
@@ -56,7 +58,7 @@ func TestPresto(t *testing.T) {
 	// Confirm that the record was sent/saved correctly.
 	criteria := expression.New("personId", "=", john.PersonID)
 
-	if err := session.Load("Persons", criteria, &person); err != nil {
+	if err := session.Collection("Persons").Load(criteria, &person); err != nil {
 		derp.Report(err)
 		assert.Fail(t, "Error loading new record from db", err)
 	}
@@ -78,7 +80,7 @@ func TestPresto(t *testing.T) {
 
 	// Confirm that the record was sent/saved correctly.
 	criteria = expression.New("personId", "=", sarah.PersonID)
-	if err := session.Load("Persons", criteria, &person); err != nil {
+	if err := session.Collection("Persons").Load(criteria, &person); err != nil {
 		derp.Report(err)
 		assert.Fail(t, "Error loading new record", err)
 	}
@@ -138,7 +140,7 @@ func TestPresto(t *testing.T) {
 
 		// Confirm that the record was sent/saved correctly.
 		criteria = expression.New("personId", "=", sarah.PersonID)
-		if err := session.Load("Persons", criteria, &person); err != nil {
+		if err := session.Collection("Persons").Load(criteria, &person); err != nil {
 			derp.Report(err)
 			assert.Fail(t, "Error loading new record", err)
 		}
@@ -179,8 +181,10 @@ func testFactory(db data.Server) ServiceFunc {
 
 	return func(ctx context.Context) Service {
 
+		s, _ := db.Session(ctx)
+
 		return &testPersonService{
-			session: db.Session(ctx),
+			session: s,
 		}
 	}
 }
