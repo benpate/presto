@@ -3,7 +3,7 @@ module github.com/benpate/presto
 go 1.14
 
 require (
-	github.com/benpate/data v0.5.0
+	github.com/benpate/data v0.7.0
 	github.com/benpate/derp v0.14.0
 	github.com/benpate/remote v0.5.8
 	github.com/davecgh/go-spew v1.1.1
