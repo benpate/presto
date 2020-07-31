@@ -1,7 +1,6 @@
 package presto
 
 import (
-	"github.com/benpate/derp"
 	"github.com/labstack/echo/v4"
 )
 
@@ -13,13 +12,7 @@ func (collection *Collection) Get(roles ...RoleFunc) *Collection {
 		service := collection.serviceFunc(ctx.Request().Context())
 		defer service.Close()
 
-		scopes, err := collection.getScopesWithToken()
-
-		if err != nil {
-			err = derp.Wrap(err, "collection.Get", "Error defining scopes")
-			derp.Report(err)
-			return ctx.String(err.Code, "")
-		}
+		scopes := collection.getScopesWithToken()
 
 		code, object := Get(ctx, service, collection.getCache(), scopes, roles)
 

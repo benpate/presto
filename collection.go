@@ -65,7 +65,7 @@ func (collection *Collection) getScopes() ScopeFuncSlice {
 }
 
 // getScopeWithToken returns all of the scopes that are valid for this collection, and adds a ScopeFunc for the collection.token
-func (collection *Collection) getScopesWithToken() (ScopeFuncSlice, *derp.Error) {
+func (collection *Collection) getScopesWithToken() ScopeFuncSlice {
 
 	scopes := collection.getScopes()
 
@@ -78,7 +78,7 @@ func (collection *Collection) getScopesWithToken() (ScopeFuncSlice, *derp.Error)
 		return nil, derp.New(derp.CodeBadRequestError, "collection.getScopeWithToken", "Token cannot be empty", collection.token)
 	}
 
-	return append(scopes, tokenScopeFunc), nil
+	return append(scopes, tokenScopeFunc)
 }
 
 // isEtagConflict returns TRUE if the provided ETag DOES NOT match the value in the cache.

@@ -19,14 +19,7 @@ func (collection *Collection) Put(roles ...RoleFunc) *Collection {
 		isNewObject := false
 
 		// Use scoper functions to create query criteria for this object
-		scopes, err := collection.getScopesWithToken()
-
-		if err != nil {
-			err = derp.Wrap(err, "presto.Patch", "Error determining scopes", ctx)
-			derp.Report(err)
-			return ctx.NoContent(err.Code)
-		}
-
+		scopes := collection.getScopesWithToken()
 		criteria, err := scopes.Evaluate(ctx)
 
 		if err != nil {
