@@ -13,6 +13,12 @@ type ScopeFunc func(context Context) (expression.Expression, *derp.Error)
 // ScopeFuncSlice defines behaviors for a slice of Scopes
 type ScopeFuncSlice []ScopeFunc
 
+func (scopes *ScopeFuncSlice) Add(new ...ScopeFunc) {
+
+	result := append(*scopes, new...)
+	*scopes = result
+}
+
 // Evaluate resolves all scopes into an expression (or error) using the provided Context
 func (scopes ScopeFuncSlice) Evaluate(ctx Context) (expression.AndExpression, *derp.Error) {
 
@@ -26,7 +32,7 @@ func (scopes ScopeFuncSlice) Evaluate(ctx Context) (expression.AndExpression, *d
 			return result, derp.Wrap(err, "presto.getScope", "Error executing scope function")
 		}
 
-		result = expression.And(result, next)
+		result = result.Add(next)
 	}
 
 	return result, nil
