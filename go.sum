@@ -3,8 +3,9 @@ github.com/aws/aws-sdk-go v1.34.28/go.mod h1:H7NKnBqNVzoTJpGfLrQkkD+ytBA93eiDYi/
 github.com/benpate/data v0.10.0 h1:TfO9p5ATMgC/z17OFut0o9ZBNI+TI0h8QUkLMemrqXI=
 github.com/benpate/data v0.10.0/go.mod h1:kCcbKTg91L1ycdQuNVluhT7Wnf0kmvvoNVFD5Ke6yv0=
 github.com/benpate/derp v0.19.0/go.mod h1:ppa9ihhpc+leDW8d5GKklLicyE6BMuM22MQmObjO8q8=
-github.com/benpate/derp v0.20.1 h1:5+insQ93cVwMhuT53W1WSSDFIaiDQAq5aBuwYTYDnsk=
 github.com/benpate/derp v0.20.1/go.mod h1:ENjMpkMmxn9gAulMAggElVcD2kNrsbjFhoZK8fUlCxY=
+github.com/benpate/derp v0.22.2 h1:qPcnT32VG8gqhDR4y+dhK2n/0TMvZ3RUP+HbENNogAc=
+github.com/benpate/derp v0.22.2/go.mod h1:ENjMpkMmxn9gAulMAggElVcD2kNrsbjFhoZK8fUlCxY=
 github.com/benpate/remote v0.6.1 h1:NtvvbZi7+NOI4J+J/oaXc6EuPKFNMw4Fy45ekYn+gG4=
 github.com/benpate/remote v0.6.1/go.mod h1:k6deqKnlK51phgKplCsIL8Gib113NGZDQy5n6vOluRM=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=

@@ -4,7 +4,7 @@ go 1.14
 
 require (
 	github.com/benpate/data v0.10.0
-	github.com/benpate/derp v0.20.1
+	github.com/benpate/derp v0.22.2
 	github.com/benpate/remote v0.6.1
 	github.com/davecgh/go-spew v1.1.1
 	github.com/labstack/echo/v4 v4.1.17
